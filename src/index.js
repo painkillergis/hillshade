@@ -1,4 +1,4 @@
-describe('service', function () {
+typeof describe === 'undefined' || describe('service', function () {
   const chai = require('chai');
   const request = require('request-promise');
   chai.should();
@@ -11,4 +11,16 @@ describe('service', function () {
       message: 'hello world',
     });
   });
+  after(function () {
+    server.close();
+  });
 });
+
+
+const app = require('express')();
+app.get('/', (ignored, response) => {
+  response.json({
+    message: 'hello world',
+  });
+});
+const server = app.listen(8080, () => console.log('0.0.0.0:8080'));
