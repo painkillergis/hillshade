@@ -1,0 +1,9 @@
+{
+  "name": "painkiller",
+  "version": "0.0.0",
+  "description": "Shaded relief ReST service",
+  "main": "src/index.js",
+  "repository": "git@github.com:mossymaps/painkiller.git",
+  "author": "arctair <jtyler_@outlook.com>",
+  "license": "MIT"
+}
