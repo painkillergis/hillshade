@@ -15,6 +15,7 @@
     "request-promise": "^4.2.5"
   },
   "scripts": {
-    "testAcceptance": "mocha src/index.js"
+    "testAcceptance": "mocha src/index.js",
+    "installAssets": "aws s3 cp s3://prd-tnm/StagedProducts/Elevation/13/IMG/USGS_NED_13_n38w106_IMG.zip assets/ && unzip -d assets/ assets/USGS_NED_13_n38w106_IMG.zip USGS_NED_13_n38w106_IMG.img"
   }
 }

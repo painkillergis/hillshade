@@ -1,6 +1,7 @@
 const fs = require('fs');
 
 typeof describe === 'undefined' || describe('service', function () {
+  this.timeout(0)
   const chai = require('chai');
   const crypto = require('crypto');
   const request = require('request-promise');
@@ -21,7 +22,7 @@ typeof describe === 'undefined' || describe('service', function () {
       uri: 'http://localhost:8080',
     });
     responseBig.headers['content-type'].should.contain('image/tiff');
-    sha1(responseBig.body).should.equal(sha1(fs.readFileSync('./src/shaded-relief.tif')));
+    sha1(responseBig.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief.tif')));
 
     const responseSmall = await request({
       json: {
@@ -33,17 +34,21 @@ typeof describe === 'undefined' || describe('service', function () {
       uri: 'http://localhost:8080',
     });
     responseSmall.headers['content-type'].should.contain('image/tiff');
-    sha1(responseSmall.body).should.equal(sha1(fs.readFileSync('./src/shaded-relief-small.tif')));
+    sha1(responseSmall.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-small.tif')));
   });
   after(function () {
     server.close();
   });
 });
 
+const cp = require('child_process');
 
 const app = require('express')();
 app.get('/', (ignored, response) => {
+  cp.execSync('python src/translate.py assets/USGS_NED_13_n38w106_IMG.img /tmp/translate.tif', { stdio: 'inherit' });
+  cp.execSync('blender -b -P src/render.py -noaudio -o ///tmp/shaded-relief-#.tif -f 0 -- 0', { stdio: 'inherit' });
+
   response.header('content-type', 'image/tiff');
-  response.send(fs.readFileSync('./src/shaded-relief.tif'));
+  response.send(fs.readFileSync('/tmp/shaded-relief-0.tif'));
 });
 const server = app.listen(8080, () => console.log('0.0.0.0:8080'));
