@@ -1,7 +1,7 @@
 from osgeo import gdal, gdalconst
 import sys
 
-_, rasterInPath, rasterOutPath = sys.argv
+rasterInPath, rasterOutPath, width, height = sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
 
 raster = gdal.Open(rasterInPath)
 band = raster.GetRasterBand(1)
@@ -15,8 +15,8 @@ gdal.Translate(
   rasterOutPath,
   rasterInPath,
   options = gdal.TranslateOptions(
-    width = 128,
-    height = 128,
+    width = width,
+    height = height,
     outputType = gdalconst.GDT_UInt16,
     scaleParams = [[srcMin, srcMax, 8192, 65533]],
     resampleAlg = 'bilinear',
