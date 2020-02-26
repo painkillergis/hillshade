@@ -15,8 +15,16 @@ typeof describe === 'undefined' || describe('service', function () {
     const responseBig = await request({
       encoding: null,
       json: {
-        width: 256,
-        height: 256,
+        size: {
+          width: 256,
+          height: 256,
+        },
+        extent: {
+          left: -106.0005560,
+          right: -104.9993523,
+          top: 38.0005557,
+          bottom: 36.9993520,
+        },
       },
       method: 'POST',
       resolveWithFullResponse: true,
@@ -25,18 +33,26 @@ typeof describe === 'undefined' || describe('service', function () {
     responseBig.headers['content-type'].should.contain('image/tiff');
     sha1(responseBig.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief.tif')));
 
-    const responseSmall = await request({
+    const responseLeft = await request({
       encoding: null,
       json: {
-        width: 128,
-        height: 128,
+        size: {
+          width: 128,
+          height: 256,
+        },
+        extent: {
+          left: -106.0005560,
+          right: -105.4999542,
+          top: 38.0005557,
+          bottom: 36.9993520,
+        },
       },
       method: 'POST',
       resolveWithFullResponse: true,
       uri: 'http://localhost:8080',
     });
-    responseSmall.headers['content-type'].should.contain('image/tiff');
-    sha1(responseSmall.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-small.tif')));
+    responseLeft.headers['content-type'].should.contain('image/tiff');
+    sha1(responseLeft.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-left.tif')));
   });
   after(function () {
     server.close();
@@ -49,8 +65,16 @@ const cp = require('child_process');
 const app = require('express')();
 app.use(bodyParser.json());
 app.post('/', (request, response) => {
-  const { width, height } = request.body;
-  cp.execSync(`python src/translate.py assets/USGS_NED_13_n38w106_IMG.img /tmp/translate.tif ${width} ${height}`, { stdio: 'inherit' });
+  const {
+    extent: {
+      left,
+      right,
+      top,
+      bottom,
+    },
+    size: { width, height },
+  } = request.body;
+  cp.execSync(`python src/translate.py assets/USGS_NED_13_n38w106_IMG.img /tmp/translate.tif ${width} ${height} ${left} ${top} ${right} ${bottom}`, { stdio: 'inherit' });
   cp.execSync(`blender -b -P src/render.py -noaudio -o ///tmp/shaded-relief-#.tif -f 0 -- ${width} ${height} 2.0`, { stdio: 'inherit' });
 
   response.header('content-type', 'image/tiff');

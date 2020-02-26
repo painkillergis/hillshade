@@ -24,7 +24,7 @@ for scene in bpy.data.scenes:
   scene.camera.rotation_euler = (0.0, 0.0, 0.0)
 
 bpy.data.cameras['Camera'].type = 'ORTHO'
-bpy.data.cameras['Camera'].ortho_scale = 2
+bpy.data.cameras['Camera'].ortho_scale = max(width / height, 1) * 2
 
 bpy.data.lights['Light'].type = 'SUN'
 bpy.data.lights['Light'].angle = math.radians(90)
@@ -33,6 +33,7 @@ bpy.data.objects['Light'].rotation_euler = (0, 45, 135)
 
 bpy.data.objects.remove(bpy.data.objects['Cube'], do_unlink=True)
 bpy.ops.mesh.primitive_plane_add()
+bpy.data.objects['Plane'].scale = (width / height, 1, 1)
 material = bpy.data.materials.new(name = 'Material')
 material.use_nodes = True
 bpy.data.objects['Plane'].data.materials.append(material)

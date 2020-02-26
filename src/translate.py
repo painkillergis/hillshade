@@ -1,7 +1,9 @@
 from osgeo import gdal, gdalconst
-import sys
+import json, sys
 
-rasterInPath, rasterOutPath, width, height = sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
+rasterInPath, rasterOutPath = sys.argv[1:3]
+width, height = map(int, sys.argv[3:5])
+left, top, right, bottom = map(float, sys.argv[5:9])
 
 raster = gdal.Open(rasterInPath)
 band = raster.GetRasterBand(1)
@@ -11,14 +13,22 @@ srcMin, srcMax = map(
   [band.GetMinimum(), band.GetMaximum()],
 )
 
-gdal.Translate(
-  rasterOutPath,
+gdal.Warp(
+  '/tmp/warp.tif',
   rasterInPath,
-  options = gdal.TranslateOptions(
+  options = gdal.WarpOptions(
+    outputBounds = [left, bottom, right, top],
     width = width,
     height = height,
-    outputType = gdalconst.GDT_UInt16,
-    scaleParams = [[srcMin, srcMax, 8192, 65533]],
     resampleAlg = 'bilinear',
+  ),
+)
+
+gdal.Translate(
+  rasterOutPath,
+  '/tmp/warp.tif',
+  options = gdal.TranslateOptions(
+    scaleParams = [[srcMin, srcMax, 8192, 65533]],
+    outputType = gdalconst.GDT_UInt16,
   ),
 )
