@@ -1,2 +1,4 @@
 node_modules/
-assets/USGS_NED_13_n38w106_IMG.*
+*.zip
+*.img
+*.aux.xml

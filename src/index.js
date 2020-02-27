@@ -54,6 +54,28 @@ typeof describe === 'undefined' || describe('service', function () {
     response.headers['content-type'].should.contain('image/tiff');
     sha1(response.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-left.tif')));
   });
+  it('should return shaded relief TIFF with extent spanning two 3dep tiles', async function () {
+    const response = await request({
+      encoding: null,
+      json: {
+        size: {
+          width: 256,
+          height: 128,
+        },
+        extent: {
+          left: -107,
+          right: -105,
+          top: 38,
+          bottom: 37,
+        },
+      },
+      method: 'POST',
+      resolveWithFullResponse: true,
+      uri: 'http://localhost:8080',
+    });
+    response.headers['content-type'].should.contain('image/tiff');
+    sha1(response.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-two.tif')));
+  });
   after(function () {
     server.close();
   });
