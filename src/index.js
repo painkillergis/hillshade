@@ -7,12 +7,11 @@ typeof describe === 'undefined' || describe('service', function () {
   const request = require('request-promise');
   chai.should();
   chai.use(require('chai-as-promised'));
-  it('should return shaded relief TIFF with predetermined extent', async function () {
-    const sha1 = buffer => crypto.createHash('sha1')
-      .update(buffer)
-      .digest('hex');
-
-    const responseBig = await request({
+  const sha1 = buffer => crypto.createHash('sha1')
+    .update(buffer)
+    .digest('hex');
+  it('should return shaded relief TIFF with extent matching 3dep tile', async function () {
+    const response = await request({
       encoding: null,
       json: {
         size: {
@@ -30,10 +29,11 @@ typeof describe === 'undefined' || describe('service', function () {
       resolveWithFullResponse: true,
       uri: 'http://localhost:8080',
     });
-    responseBig.headers['content-type'].should.contain('image/tiff');
-    sha1(responseBig.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief.tif')));
-
-    const responseLeft = await request({
+    response.headers['content-type'].should.contain('image/tiff');
+    sha1(response.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief.tif')));
+  });
+  it('should return shaded relief TIFF with extent matching half 3dep tile', async function () {
+    const response = await request({
       encoding: null,
       json: {
         size: {
@@ -51,8 +51,8 @@ typeof describe === 'undefined' || describe('service', function () {
       resolveWithFullResponse: true,
       uri: 'http://localhost:8080',
     });
-    responseLeft.headers['content-type'].should.contain('image/tiff');
-    sha1(responseLeft.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-left.tif')));
+    response.headers['content-type'].should.contain('image/tiff');
+    sha1(response.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-left.tif')));
   });
   after(function () {
     server.close();
