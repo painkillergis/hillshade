@@ -6,15 +6,13 @@ if len(scriptsArgs) != 3:
   raise
 width, height, scale = int(scriptsArgs[0]), int(scriptsArgs[1]), float(scriptsArgs[2])
 
-bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'CUDA'
-
 for scene in bpy.data.scenes:
+  scene.render.engine = 'CYCLES'
   scene.cycles.device = 'GPU'
   scene.cycles.samples = 64
   scene.cycles.feature_set = 'EXPERIMENTAL'
   scene.cycles.use_adaptive_subdivision = True
   scene.cycles.displacement_method = 'TRUE'
-  scene.render.engine = 'CYCLES'
   scene.render.resolution_x = width
   scene.render.resolution_y = height
   scene.render.image_settings.file_format = 'TIFF'
@@ -22,6 +20,8 @@ for scene in bpy.data.scenes:
   scene.render.image_settings.color_depth = '8'
   scene.camera.location = (0.0, 0.0, 100.0)
   scene.camera.rotation_euler = (0.0, 0.0, 0.0)
+
+bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'CUDA'
 
 bpy.data.cameras['Camera'].type = 'ORTHO'
 bpy.data.cameras['Camera'].ortho_scale = max(width / height, 1) * 2
