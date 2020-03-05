@@ -149,21 +149,22 @@ typeof describe === 'undefined' || describe('app', function () {
 const app = require('express')();
 app.use(require('body-parser').json());
 app.post('/', async (request, response) => {
-  if (request.body.size === null
-    || typeof request.body.size !== 'object'
-    || typeof request.body.size.height !== 'number'
-    || typeof request.body.size.width !== 'number'
+  const { size, extent } = request.body;
+  if (size === null
+    || typeof size !== 'object'
+    || typeof size.height !== 'number'
+    || typeof size.width !== 'number'
   ) {
     response.status(400);
     response.json({
       message: 'size was malformed or missing',
     });
-  } else if (request.body.extent === null
-    || typeof request.body.extent !== 'object'
-    || typeof request.body.extent.left !== 'number'
-    || typeof request.body.extent.top !== 'number'
-    || typeof request.body.extent.right !== 'number'
-    || typeof request.body.extent.bottom !== 'number'
+  } else if (extent === null
+    || typeof extent !== 'object'
+    || typeof extent.left !== 'number'
+    || typeof extent.top !== 'number'
+    || typeof extent.right !== 'number'
+    || typeof extent.bottom !== 'number'
   ) {
     response.status(400);
     response.json({
