@@ -81,6 +81,9 @@ typeof describe === 'undefined' || describe('service', function () {
   });
 });
 
+if (!process.env.IMG_DIRECTORY) throw Error('Environment variable IMG_DIRECTORY must be set');
+const server = require('./app').listen(8080, () => console.log('0.0.0.0:8080'));
+ 
 const bodyParser = require('body-parser');
 const cp = require('child_process');
 const bounds = require('./bounds');
