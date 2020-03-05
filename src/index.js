@@ -1,9 +1,8 @@
-const fs = require('fs');
-
 typeof describe === 'undefined' || describe('service', function () {
   this.timeout(0)
   const chai = require('chai');
   const crypto = require('crypto');
+  const fs = require('fs');
   const request = require('request-promise');
   chai.should();
   chai.use(require('chai-as-promised'));
@@ -83,27 +82,3 @@ typeof describe === 'undefined' || describe('service', function () {
 
 if (!process.env.IMG_DIRECTORY) throw Error('Environment variable IMG_DIRECTORY must be set');
 const server = require('./app').listen(8080, () => console.log('0.0.0.0:8080'));
- 
-const bodyParser = require('body-parser');
-const cp = require('child_process');
-const bounds = require('./bounds');
-const img = require('./img');
-
-const app = require('express')();
-app.use(bodyParser.json());
-app.post('/', (request, response) => {
-  const {
-    extent,
-    size: { width, height },
-  } = request.body;
-  const { left, top, right, bottom } = extent;
-  const upperLefts = bounds.toUpperLefts(extent);
-  const imgPaths = img.pathsFromUpperLefts(upperLefts);
-  cp.execSync(`gdalbuildvrt -overwrite /tmp/elevation.vrt ${imgPaths.join(' ')}`);
-  cp.execSync(`python src/translate.py /tmp/elevation.vrt /tmp/translate.tif ${width} ${height} ${left} ${top} ${right} ${bottom}`, { stdio: 'inherit' });
-  cp.execSync(`blender -b -P src/render.py -noaudio -o ///tmp/shaded-relief-#.tif -f 0 -- ${width} ${height} 2.0`, { stdio: 'inherit' });
-
-  response.header('content-type', 'image/tiff');
-  response.send(fs.readFileSync('/tmp/shaded-relief-0.tif'));
-});
-const server = app.listen(8080, () => console.log('0.0.0.0:8080'));
