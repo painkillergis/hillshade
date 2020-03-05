@@ -1,0 +1,27 @@
+unzipOne() {
+  file=$1
+  destinationDir=$2
+  
+  id=`echo $file | \
+    sed -E 's/.*((n|s)[0-9]+(e|w)[0-9]+).*/\1/'`
+  hasUnzippedFile=`find $destinationDir | grep $id`
+  if [ -z "$hasUnzippedFile" ] ; then
+    scp gwen:/media/warehouse/com.arctair.gis.datasets/3dep/13/IMG/$file /tmp/$file
+    img=`unzip -l /tmp/$file | \
+      grep img$ | \
+      sed 's/^/ /' | \
+      tr -s ' ' | \
+      cut -d ' ' -f5`
+    unzip -ujd "$destinationDir" /tmp/$file $img
+    rm /tmp/$file
+  else
+    echo skipping artifact $file because it has been unzipped already
+  fi
+}
+
+mkdir -p "$1"
+ssh gwen -- ls /media/warehouse/com.arctair.gis.datasets/3dep/13/IMG | \
+  while read file ; do
+    unzipOne $file "$1"
+    test $? -gt 128 && break
+  done

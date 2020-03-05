@@ -19,10 +19,10 @@ typeof describe === 'undefined' || describe('service', function () {
           height: 256,
         },
         extent: {
-          left: -106.0005560,
-          right: -104.9993523,
-          top: 38.0005557,
-          bottom: 36.9993520,
+          left: -106.,
+          right: -105,
+          top: 38,
+          bottom: 37,
         },
       },
       method: 'POST',
@@ -41,10 +41,10 @@ typeof describe === 'undefined' || describe('service', function () {
           height: 256,
         },
         extent: {
-          left: -106.0005560,
-          right: -105.4999542,
-          top: 38.0005557,
-          bottom: 36.9993520,
+          left: -106,
+          right: -105.5,
+          top: 38,
+          bottom: 37,
         },
       },
       method: 'POST',
@@ -83,20 +83,21 @@ typeof describe === 'undefined' || describe('service', function () {
 
 const bodyParser = require('body-parser');
 const cp = require('child_process');
+const bounds = require('./bounds');
+const img = require('./img');
 
 const app = require('express')();
 app.use(bodyParser.json());
 app.post('/', (request, response) => {
   const {
-    extent: {
-      left,
-      right,
-      top,
-      bottom,
-    },
+    extent,
     size: { width, height },
   } = request.body;
-  cp.execSync(`python src/translate.py assets/USGS_NED_13_n38w106_IMG.img /tmp/translate.tif ${width} ${height} ${left} ${top} ${right} ${bottom}`, { stdio: 'inherit' });
+  const { left, top, right, bottom } = extent;
+  const upperLefts = bounds.toUpperLefts(extent);
+  const imgPaths = img.pathsFromUpperLefts(upperLefts);
+  cp.execSync(`gdalbuildvrt -overwrite /tmp/elevation.vrt ${imgPaths.join(' ')}`);
+  cp.execSync(`python src/translate.py /tmp/elevation.vrt /tmp/translate.tif ${width} ${height} ${left} ${top} ${right} ${bottom}`, { stdio: 'inherit' });
   cp.execSync(`blender -b -P src/render.py -noaudio -o ///tmp/shaded-relief-#.tif -f 0 -- ${width} ${height} 2.0`, { stdio: 'inherit' });
 
   response.header('content-type', 'image/tiff');
