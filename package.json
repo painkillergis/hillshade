@@ -21,6 +21,8 @@
   },
   "scripts": {
     "testAcceptance": "mocha src/index.js",
+    "testUnit": "mocha src/app",
+    "testUnitForever": "nodemon --exec yarn testUnit",
     "installAssets": "sh installAssets.sh"
   }
 }
