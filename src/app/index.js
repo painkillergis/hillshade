@@ -140,10 +140,35 @@ typeof describe === 'undefined' || describe('app', function () {
         )
       )
     });
+    it('should return 500 when service yacks', async function () {
+      service.render.rejects(new Error('hey world'));
+
+      const response = await chai.request(app)
+        .post('/')
+        .set('content-type', 'application/json')
+        .send({
+          size: {
+            width: 256,
+            height: 256,
+          },
+          extent: {
+            left: -106,
+            right: -105,
+            top: 38,
+            bottom: 37,
+          },
+        });
+
+      response.should.have.status(500);
+      response.should.have.header('content-type', 'application/json; charset=utf-8');
+      response.body.should.deep.equal({
+        error: 'hey world',
+      });
+    });
     afterEach(function () {
       sandbox.restore();
-    })
-  })
+    });
+  });
 });
 
 const app = require('express')();
@@ -155,10 +180,8 @@ app.post('/', async (request, response) => {
     || typeof size.height !== 'number'
     || typeof size.width !== 'number'
   ) {
-    response.status(400);
-    response.json({
-      message: 'size was malformed or missing',
-    });
+    response.status(400)
+      .json({ message: 'size was malformed or missing' });
   } else if (extent === null
     || typeof extent !== 'object'
     || typeof extent.left !== 'number'
@@ -166,13 +189,19 @@ app.post('/', async (request, response) => {
     || typeof extent.right !== 'number'
     || typeof extent.bottom !== 'number'
   ) {
-    response.status(400);
-    response.json({
-      message: 'extent was malformed or missing',
-    });
+    response.status(400)
+      .json({ message: 'extent was malformed or missing' });
   } else {
-    response.header('content-type', 'image/tiff');
-    response.send(await service.render(request.body));
+    try {
+      response
+        .set('content-type', 'image/tiff')
+        .send(await service.render(request.body));
+    } catch (error) {
+      response
+        .status(500)
+        .set('content-type', 'application/json')
+        .json({ error: error.message })
+    }
   }
 });
 
