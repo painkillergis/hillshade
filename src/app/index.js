@@ -175,20 +175,10 @@ const app = require('express')();
 app.use(require('body-parser').json());
 app.post('/', async (request, response) => {
   const { size, extent } = request.body;
-  if (size === null
-    || typeof size !== 'object'
-    || typeof size.height !== 'number'
-    || typeof size.width !== 'number'
-  ) {
+  if (isSizeInvalid(size)) {
     response.status(400)
       .json({ message: 'size was malformed or missing' });
-  } else if (extent === null
-    || typeof extent !== 'object'
-    || typeof extent.left !== 'number'
-    || typeof extent.top !== 'number'
-    || typeof extent.right !== 'number'
-    || typeof extent.bottom !== 'number'
-  ) {
+  } else if (isExtentInvalid(extent)) {
     response.status(400)
       .json({ message: 'extent was malformed or missing' });
   } else {
@@ -204,5 +194,17 @@ app.post('/', async (request, response) => {
     }
   }
 });
+
+const isSizeInvalid = size => size === null
+  || typeof size !== 'object'
+  || typeof size.height !== 'number'
+  || typeof size.width !== 'number'
+
+const isExtentInvalid = extent => extent === null
+  || typeof extent !== 'object'
+  || typeof extent.left !== 'number'
+  || typeof extent.top !== 'number'
+  || typeof extent.right !== 'number'
+  || typeof extent.bottom !== 'number'
 
 module.exports = app;
