@@ -1,7 +1,7 @@
 const promisify = require('util').promisify
 const exec = promisify(require('child_process').exec);
 
-const generate = ({
+const generate = async ({
   size: {
     width,
     height,
@@ -12,8 +12,15 @@ const generate = ({
     right,
     bottom,
   },
-}) => exec(
-  [
+  imgPaths,
+}) => {
+  await exec([
+    'gdalbuildvrt',
+    '-overwrite',
+    '/tmp/elevation.vrt',
+    ...imgPaths,
+  ].join(' '))
+  await exec([
     'python',
     'src/app/translate.py',
     '/tmp/elevation.vrt',
@@ -24,7 +31,7 @@ const generate = ({
     top,
     right,
     bottom
-  ].join(' '),
-);
+  ].join(' '))
+}
 
 module.exports = { generate };

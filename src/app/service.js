@@ -1,4 +1,3 @@
-const cp = require('child_process');
 const blender = require('./blender');
 const bounds = require('./bounds');
 const heightmap = require('./heightmap');
@@ -10,8 +9,7 @@ const render = async ({
 }) => {
   const upperLefts = bounds.toUpperLefts(extent);
   const imgPaths = img.pathsFromUpperLefts(upperLefts);
-  cp.execSync(`gdalbuildvrt -overwrite /tmp/elevation.vrt ${imgPaths.join(' ')}`);
-  await heightmap.generate({ extent, size });
+  await heightmap.generate({ imgPaths, extent, size });
   return blender.renderShadedRelief({ size, scale: 2.0 });
 };
 
