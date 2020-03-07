@@ -1,5 +1,5 @@
 const cp = require('child_process');
-const fs = require('fs');
+const blender = require('./blender');
 const bounds = require('./bounds');
 const img = require('./img');
 
@@ -12,8 +12,8 @@ const render = async ({
   const imgPaths = img.pathsFromUpperLefts(upperLefts);
   cp.execSync(`gdalbuildvrt -overwrite /tmp/elevation.vrt ${imgPaths.join(' ')}`);
   cp.execSync(`python src/app/translate.py /tmp/elevation.vrt /tmp/translate.tif ${width} ${height} ${left} ${top} ${right} ${bottom}`, { stdio: 'inherit' });
-  cp.execSync(`blender -b -P src/app/render.py -noaudio -o ///tmp/shaded-relief-#.tif -f 0 -- ${width} ${height} 2.0`, { stdio: 'inherit' });
-  return fs.readFileSync('/tmp/shaded-relief-0.tif');
+
+  return blender.renderShadedRelief({ size: { width, height }, scale: 2.0 });
 };
 
 module.exports = ({
