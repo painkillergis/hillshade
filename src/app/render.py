@@ -1,10 +1,10 @@
 import bpy, math, sys
 
 scriptsArgs = sys.argv[sys.argv.index("--") + 1:]
-if len(scriptsArgs) != 3:
-  print('Usage: blender ... -- <width> <height> <scale>')
+if len(scriptsArgs) != 4:
+  print('Usage: blender ... -- <heightmap> <width> <height> <scale>')
   raise
-width, height, scale = int(scriptsArgs[0]), int(scriptsArgs[1]), float(scriptsArgs[2])
+heightmap, width, height, scale = scriptsArgs[0], int(scriptsArgs[1]), int(scriptsArgs[2]), float(scriptsArgs[3])
 
 for scene in bpy.data.scenes:
   scene.render.engine = 'CYCLES'
@@ -41,7 +41,7 @@ outputNode = material.node_tree.nodes.get('Material Output')
 displacementNode = material.node_tree.nodes.new('ShaderNodeDisplacement')
 displacementNode.inputs['Scale'].default_value = scale
 imageNode = material.node_tree.nodes.new('ShaderNodeTexImage')
-imageNode.image = bpy.data.images.load('/tmp/heightmap.tif')
+imageNode.image = bpy.data.images.load(heightmap)
 imageNode.image.colorspace_settings.name = 'Linear'
 imageNode.extension = 'EXTEND'
 imageNode.interpolation = 'Smart'

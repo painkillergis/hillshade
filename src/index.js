@@ -59,23 +59,39 @@ typeof describe === 'undefined' || describe('service', function () {
     });
     putResponse2.statusCode.should.be.lessThan(300);
 
+    const getHeightmapResponse = await request({
+      encoding: null,
+      method: 'GET',
+      resolveWithFullResponse: true,
+      uri: 'http://localhost:8080/1234/heightmap.tif',
+    });
+    const getHeightmapResponse2 = await request({
+      encoding: null,
+      method: 'GET',
+      resolveWithFullResponse: true,
+      uri: 'http://localhost:8080/two-plus-half/heightmap.tif',
+    });
+    getHeightmapResponse.headers['content-type'].should.contain('image/tiff');
+    getHeightmapResponse2.headers['content-type'].should.contain('image/tiff');
+    sha1(getHeightmapResponse.body).should.equal(sha1(fs.readFileSync('./assets/1234-heightmap.tif')));
+    sha1(getHeightmapResponse2.body).should.equal(sha1(fs.readFileSync('./assets/two-plus-half-heightmap.tif')));
 
-    const getResponse = await request({
+    const getShadedReliefResponse = await request({
       encoding: null,
       method: 'GET',
       resolveWithFullResponse: true,
       uri: 'http://localhost:8080/1234/shaded-relief.tif',
     });
-    const getResponse2 = await request({
+    const getShadedReliefResponse2 = await request({
       encoding: null,
       method: 'GET',
       resolveWithFullResponse: true,
       uri: 'http://localhost:8080/two-plus-half/shaded-relief.tif',
     });
-    getResponse.headers['content-type'].should.contain('image/tiff');
-    getResponse2.headers['content-type'].should.contain('image/tiff');
-    sha1(getResponse.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief.tif')));
-    sha1(getResponse2.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-two-plus-half.tif')));
+    getShadedReliefResponse.headers['content-type'].should.contain('image/tiff');
+    getShadedReliefResponse2.headers['content-type'].should.contain('image/tiff');
+    sha1(getShadedReliefResponse.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief.tif')));
+    sha1(getShadedReliefResponse2.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-two-plus-half.tif')));
   });
   after(function () {
     server.close();

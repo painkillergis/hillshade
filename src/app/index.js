@@ -12,6 +12,20 @@ typeof describe === 'undefined' || describe('app', function () {
     sandbox = sinon.createSandbox();
     sandbox.stub(service, 'render');
   })
+  describe('GET /:id/heightmap.tif', function () {
+    it('should return heightmap tif by id', async function () {
+      sandbox.stub(service, 'getHeightmapById');
+      service.getHeightmapById.withArgs('the_id').resolves(Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]));
+
+      const response = await chai.request(app)
+        .get('/the_id/heightmap.tif')
+        .buffer();
+
+      response.should.have.status(200);
+      response.should.have.header('content-type', 'image/tiff');
+      response.body.should.deep.equal(Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]));
+    });
+  });
   describe('GET /:id/shaded-relief.tif', function () {
     it('should return shaded relief tif by id', async function () {
       sandbox.stub(service, 'getShadedReliefById');
@@ -196,6 +210,12 @@ typeof describe === 'undefined' || describe('app', function () {
 
 const app = require('express')();
 app.use(require('body-parser').json());
+
+app.get('/:id/heightmap.tif', async (request, response) => {
+  response
+    .set('content-type', 'image/tiff')
+    .send(await service.getHeightmapById(request.params.id));
+});
 
 app.get('/:id/shaded-relief.tif', async (request, response) => {
   const image = await service.getShadedReliefById(request.params.id);

@@ -15,7 +15,7 @@ const render = async ({
 }) => {
   const upperLefts = bounds.toUpperLefts(extent);
   const imgPaths = img.pathsFromUpperLefts(upperLefts);
-  await heightmap.generate({ imgPaths, extent, size });
+  await heightmap.generate({ id, imgPaths, extent, size });
   await blender.renderShadedRelief({ id, size, scale: 2.0 });
   return getShadedReliefById(id);
 };
@@ -23,9 +23,15 @@ const render = async ({
 const getShadedReliefById = async id => {
   const path = `/tmp/${id}-0.tif`;
   return await exists(path) ? readFile(path) : null;
+};
+
+const getHeightmapById = async id => {
+  const path = `/tmp/${id}-heightmap.tif`;
+  return await exists(path) ? readFile(path) : null;
 }
 
 module.exports = ({
+  getHeightmapById,
   getShadedReliefById,
   render,
 });
