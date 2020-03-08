@@ -10,7 +10,7 @@ typeof describe === 'undefined' || describe('app', function () {
   let sandbox;
   beforeEach(function () {
     sandbox = sinon.createSandbox();
-    sandbox.stub(service, 'render');
+    sandbox.stub(service, 'createShadedRelief');
   })
   describe('GET /:id/heightmap.tif', function () {
     it('should return heightmap tif by id', async function () {
@@ -64,21 +64,15 @@ typeof describe === 'undefined' || describe('app', function () {
         },
       };
 
-      service.render.withArgs({ ...body, id: 'the_id' }).resolves(Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]));
-
       const response = await chai.request(app)
         .put('/the_id')
         .set('content-type', 'application/json')
-        .send(body)
-        .buffer();
+        .send(body);
 
-      response.should.have.status(200);
-      response.should.have.header('content-type', 'image/tiff');
-      response.body.should.deep.equal(Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]));
+      response.should.have.status(204);
+      service.createShadedRelief.should.have.been.calledWith({ ...body, id: 'the_id' });
     });
     it('should return 400 for malformed/incomplete size', async function () {
-      service.render.rejects();
-
       sizes = [
         {
           width: 'not great',
@@ -92,7 +86,7 @@ typeof describe === 'undefined' || describe('app', function () {
         [],
         19,
         null,
-      ]
+      ];
 
       await Promise.all(
         sizes.map(
@@ -118,10 +112,9 @@ typeof describe === 'undefined' || describe('app', function () {
           }
         )
       )
+      service.createShadedRelief.should.not.have.been.called;
     });
     it('should return 400 for malformed/incomplete extent', async function () {
-      service.render.rejects();
-
       extents = [
         {
           right: -105,
@@ -175,10 +168,11 @@ typeof describe === 'undefined' || describe('app', function () {
             });
           }
         )
-      )
+      );
+      service.createShadedRelief.should.not.have.been.called;
     });
     it('should return 500 when service yacks', async function () {
-      service.render.rejects(new Error('hey world'));
+      service.createShadedRelief.rejects(new Error('hey world'));
 
       const response = await chai.request(app)
         .put('/the_id')
@@ -238,9 +232,8 @@ app.put('/:id', async (request, response) => {
       .json({ message: 'extent was malformed or missing' });
   } else {
     try {
-      response
-        .set('content-type', 'image/tiff')
-        .send(await service.render({ ...request.body, id: request.params.id }));
+      await service.createShadedRelief({ ...request.body, id: request.params.id });
+      response.sendStatus(204);
     } catch (error) {
       response
         .status(500)

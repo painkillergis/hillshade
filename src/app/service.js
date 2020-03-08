@@ -8,7 +8,7 @@ const fs = require('fs');
 const readFile = promisify(fs.readFile);
 const exists = promisify(fs.exists);
 
-const render = async ({
+const createShadedRelief = async ({
   id,
   extent,
   size,
@@ -17,7 +17,6 @@ const render = async ({
   const imgPaths = img.pathsFromUpperLefts(upperLefts);
   await heightmap.generate({ id, imgPaths, extent, size });
   await blender.renderShadedRelief({ id, size, scale: 2.0 });
-  return getShadedReliefById(id);
 };
 
 const getShadedReliefById = async id => {
@@ -33,5 +32,5 @@ const getHeightmapById = async id => {
 module.exports = ({
   getHeightmapById,
   getShadedReliefById,
-  render,
+  createShadedRelief,
 });
