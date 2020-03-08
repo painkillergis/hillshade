@@ -49,39 +49,29 @@ typeof describe === 'undefined' || describe('service', function () {
     ));
 
     await Promise.all(
-      ['1234', 'two-plus-half'].map(
-        id => request({
+      [
+        '/1234/heightmap.tif',
+        '/two-plus-half/heightmap.tif',
+        '/1234/shaded-relief.tif',
+        '/two-plus-half/shaded-relief.tif',
+      ].map(
+        path => request({
           encoding: null,
           method: 'GET',
           resolveWithFullResponse: true,
-          uri: `http://localhost:8080/${id}/heightmap.tif`,
+          uri: `http://localhost:8080${path}`,
         })
-      )
+      ),
     ).then(responses => {
       responses.forEach(response => response.headers['content-type'].should.contain('image/tiff'));
       responses
         .map(response => sha1(response.body)).should.deep.equal([
           sha1(fs.readFileSync('./assets/1234-heightmap.tif')),
           sha1(fs.readFileSync('./assets/two-plus-half-heightmap.tif')),
+          sha1(fs.readFileSync('./assets/shaded-relief.tif')),
+          sha1(fs.readFileSync('./assets/shaded-relief-two-plus-half.tif')),
         ]);
     });
-
-    const getShadedReliefResponse = await request({
-      encoding: null,
-      method: 'GET',
-      resolveWithFullResponse: true,
-      uri: 'http://localhost:8080/1234/shaded-relief.tif',
-    });
-    const getShadedReliefResponse2 = await request({
-      encoding: null,
-      method: 'GET',
-      resolveWithFullResponse: true,
-      uri: 'http://localhost:8080/two-plus-half/shaded-relief.tif',
-    });
-    getShadedReliefResponse.headers['content-type'].should.contain('image/tiff');
-    getShadedReliefResponse2.headers['content-type'].should.contain('image/tiff');
-    sha1(getShadedReliefResponse.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief.tif')));
-    sha1(getShadedReliefResponse2.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-two-plus-half.tif')));
   });
   after(function () {
     server.close();
