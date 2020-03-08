@@ -18,13 +18,13 @@ const generate = async ({
   await exec([
     'gdalbuildvrt',
     '-overwrite',
-    '/tmp/elevation.vrt',
+    `/tmp/${id}-elevation.vrt`,
     ...imgPaths,
   ].join(' '))
   await exec([
     'python',
-    'src/app/translate.py',
-    '/tmp/elevation.vrt',
+    'src/app/heightmap.py',
+    `/tmp/${id}-elevation.vrt`,
     `/tmp/${id}-heightmap.tif`,
     width,
     height,

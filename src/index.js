@@ -20,44 +20,46 @@ typeof describe === 'undefined' || describe('service', function () {
     response.statusCode.should.equal(404);
   })
   it('should put and get shaded relief images', async function () {
-    const putResponse = await request({
-      json: {
-        size: {
-          width: 256,
-          height: 256,
+    const putResponses = await Promise.all([
+      request({
+        json: {
+          size: {
+            width: 256,
+            height: 256,
+          },
+          extent: {
+            left: -106.,
+            right: -105,
+            top: 38,
+            bottom: 37,
+          },
         },
-        extent: {
-          left: -106.,
-          right: -105,
-          top: 38,
-          bottom: 37,
+        method: 'PUT',
+        resolveWithFullResponse: true,
+        uri: 'http://localhost:8080/1234',
+      }),
+      request({
+        encoding: null,
+        json: {
+          size: {
+            width: 384,
+            height: 128,
+          },
+          extent: {
+            left: -107,
+            right: -104.5,
+            top: 38,
+            bottom: 37,
+          },
         },
-      },
-      method: 'PUT',
-      resolveWithFullResponse: true,
-      uri: 'http://localhost:8080/1234',
-    });
-    putResponse.statusCode.should.be.lessThan(300);
+        method: 'PUT',
+        resolveWithFullResponse: true,
+        uri: 'http://localhost:8080/two-plus-half',
+      })
+    ]);
 
-    const putResponse2 = await request({
-      encoding: null,
-      json: {
-        size: {
-          width: 384,
-          height: 128,
-        },
-        extent: {
-          left: -107,
-          right: -104.5,
-          top: 38,
-          bottom: 37,
-        },
-      },
-      method: 'PUT',
-      resolveWithFullResponse: true,
-      uri: 'http://localhost:8080/two-plus-half',
-    });
-    putResponse2.statusCode.should.be.lessThan(300);
+    putResponses[0].statusCode.should.be.lessThan(300);
+    putResponses[1].statusCode.should.be.lessThan(300);
 
     const getHeightmapResponse = await request({
       encoding: null,

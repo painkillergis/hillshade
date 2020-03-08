@@ -1,9 +1,11 @@
 from osgeo import gdal, gdalconst
-import json, sys
+import json, os, sys
 
 rasterInPath, rasterOutPath = sys.argv[1:3]
 width, height = map(int, sys.argv[3:5])
 left, top, right, bottom = map(float, sys.argv[5:9])
+
+warpPath = rasterOutPath + '.warp.tif'
 
 raster = gdal.Open(rasterInPath)
 band = raster.GetRasterBand(1)
@@ -14,7 +16,7 @@ srcMin, srcMax = map(
 )
 
 gdal.Warp(
-  '/tmp/warp.tif',
+  warpPath,
   rasterInPath,
   options = gdal.WarpOptions(
     outputBounds = [left, bottom, right, top],
@@ -26,9 +28,11 @@ gdal.Warp(
 
 gdal.Translate(
   rasterOutPath,
-  '/tmp/warp.tif',
+  warpPath,
   options = gdal.TranslateOptions(
     scaleParams = [[srcMin, srcMax, 8192, 65533]],
     outputType = gdalconst.GDT_UInt16,
   ),
 )
+
+os.remove(warpPath)
