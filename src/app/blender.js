@@ -1,6 +1,5 @@
 const promisify = require('util').promisify
 const exec = promisify(require('child_process').exec);
-const readFile = promisify(require('fs').readFile);
 
 const renderShadedRelief = async ({
   id,
@@ -17,6 +16,7 @@ const renderShadedRelief = async ({
   `-o ///tmp/${id}-#.tif`,
   '-f 0',
   '--',
+  `/tmp/${id}-heightmap.tif`,
   width,
   height,
   scale,
