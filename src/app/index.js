@@ -1,7 +1,7 @@
 const service = require('./service');
 
 typeof describe === 'undefined' || describe('app', function () {
-  describe('POST /', function () {
+  describe('PUT /:id', function () {
     const chai = require('chai');
     chai.should();
     chai.use(require('chai-as-promised'));
@@ -30,7 +30,7 @@ typeof describe === 'undefined' || describe('app', function () {
       service.render.withArgs(body).resolves(Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]));
 
       const response = await chai.request(app)
-        .post('/')
+        .put('/the_id')
         .set('content-type', 'application/json')
         .send(body)
         .buffer();
@@ -61,7 +61,7 @@ typeof describe === 'undefined' || describe('app', function () {
         sizes.map(
           async size => {
             const response = await chai.request(app)
-              .post('/')
+              .put('/the_id')
               .set('content-type', 'application/json')
               .send({
                 size,
@@ -121,7 +121,7 @@ typeof describe === 'undefined' || describe('app', function () {
         extents.map(
           async extent => {
             const response = await chai.request(app)
-              .post('/')
+              .put('/the_id')
               .set('content-type', 'application/json')
               .send({
                 size: {
@@ -144,7 +144,7 @@ typeof describe === 'undefined' || describe('app', function () {
       service.render.rejects(new Error('hey world'));
 
       const response = await chai.request(app)
-        .post('/')
+        .put('/the_id')
         .set('content-type', 'application/json')
         .send({
           size: {
@@ -173,7 +173,7 @@ typeof describe === 'undefined' || describe('app', function () {
 
 const app = require('express')();
 app.use(require('body-parser').json());
-app.post('/', async (request, response) => {
+app.put('/:id', async (request, response) => {
   const { size, extent } = request.body;
   if (isSizeInvalid(size)) {
     response.status(400)

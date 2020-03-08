@@ -24,9 +24,9 @@ typeof describe === 'undefined' || describe('service', function () {
           bottom: 37,
         },
       },
-      method: 'POST',
+      method: 'PUT',
       resolveWithFullResponse: true,
-      uri: 'http://localhost:8080',
+      uri: 'http://localhost:8080/1234',
     });
     response.headers['content-type'].should.contain('image/tiff');
     sha1(response.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief.tif')));
@@ -46,9 +46,9 @@ typeof describe === 'undefined' || describe('service', function () {
           bottom: 37,
         },
       },
-      method: 'POST',
+      method: 'PUT',
       resolveWithFullResponse: true,
-      uri: 'http://localhost:8080',
+      uri: 'http://localhost:8080/left',
     });
     response.headers['content-type'].should.contain('image/tiff');
     sha1(response.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-left.tif')));
@@ -68,9 +68,9 @@ typeof describe === 'undefined' || describe('service', function () {
           bottom: 37,
         },
       },
-      method: 'POST',
+      method: 'PUT',
       resolveWithFullResponse: true,
-      uri: 'http://localhost:8080',
+      uri: 'http://localhost:8080/two',
     });
     response.headers['content-type'].should.contain('image/tiff');
     sha1(response.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief-two.tif')));
