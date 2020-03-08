@@ -50,7 +50,7 @@ typeof describe === 'undefined' || describe('app', function () {
         },
       };
 
-      service.render.withArgs(body).resolves(Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]));
+      service.render.withArgs({ ...body, id: 'the_id' }).resolves(Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]));
 
       const response = await chai.request(app)
         .put('/the_id')
@@ -220,7 +220,7 @@ app.put('/:id', async (request, response) => {
     try {
       response
         .set('content-type', 'image/tiff')
-        .send(await service.render(request.body));
+        .send(await service.render({ ...request.body, id: request.params.id }));
     } catch (error) {
       response
         .status(500)

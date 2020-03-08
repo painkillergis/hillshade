@@ -6,16 +6,18 @@ const img = require('./img');
 const readFile = require('util').promisify(require('fs').readFile);
 
 const render = async ({
+  id,
   extent,
   size,
 }) => {
   const upperLefts = bounds.toUpperLefts(extent);
   const imgPaths = img.pathsFromUpperLefts(upperLefts);
   await heightmap.generate({ imgPaths, extent, size });
-  return blender.renderShadedRelief({ size, scale: 2.0 });
+  await blender.renderShadedRelief({ id, size, scale: 2.0 });
+  return getShadedReliefById(id);
 };
 
-const getShadedReliefById = id => readFile('/tmp/shaded-relief-0.tif');
+const getShadedReliefById = id => readFile(`/tmp/${id}-0.tif`);
 
 module.exports = ({
   getShadedReliefById,

@@ -64,13 +64,12 @@ typeof describe === 'undefined' || describe('img', function () {
 
 const { readdirSync } = require('fs');
 
-const pathsFromUpperLefts = upperLefts => {
-  return readdirSync(process.env.IMG_DIRECTORY)
+const pathsFromUpperLefts = upperLefts =>
+  readdirSync(process.env.IMG_DIRECTORY)
     .filter(name => upperLefts.some(
       upperLeft => name.indexOf(upperLeftToId(upperLeft)) > -1
     ))
-    .map(name => `${process.env.IMG_DIRECTORY}/${name}`)
-}
+    .map(name => `${process.env.IMG_DIRECTORY}/${name}`);
 
 const upperLeftToId = ({ lat, lon }) => [
   lat < 0 ? 's' : 'n',
