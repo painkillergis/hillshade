@@ -11,7 +11,7 @@ const renderShadedRelief = async ({
 }) => exec([
   'blender',
   '-b',
-  '-P src/app/render.py',
+  '-P src/app/blender.py',
   '-noaudio',
   `-o ///tmp/${id}-#.tif`,
   '-f 0',
