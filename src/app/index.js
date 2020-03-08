@@ -1,18 +1,41 @@
 const service = require('./service');
 
 typeof describe === 'undefined' || describe('app', function () {
+  const chai = require('chai');
+  chai.should();
+  chai.use(require('chai-as-promised'));
+  chai.use(require('chai-http'));
+  chai.use(require('sinon-chai'));
+  const sinon = require('sinon');
+  let sandbox;
+  beforeEach(function () {
+    sandbox = sinon.createSandbox();
+    sandbox.stub(service, 'render');
+  })
+  describe('GET /:id/shaded-relief.tif', function () {
+    it('should return shaded relief tif by id', async function () {
+      sandbox.stub(service, 'getShadedReliefById');
+      service.getShadedReliefById.withArgs('the_id').resolves(Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]));
+
+      const response = await chai.request(app)
+        .get('/the_id/shaded-relief.tif')
+        .buffer();
+
+      response.should.have.status(200);
+      response.should.have.header('content-type', 'image/tiff');
+      response.body.should.deep.equal(Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]));
+    });
+    it('should return 404 when shaded relief by id not found', async function () {
+      sandbox.stub(service, 'getShadedReliefById');
+      service.getShadedReliefById.withArgs('the_id').resolves(null);
+
+      const response = await chai.request(app)
+        .get('/the_id/shaded-relief.tif');
+
+      response.should.have.status(404);
+    });
+  });
   describe('PUT /:id', function () {
-    const chai = require('chai');
-    chai.should();
-    chai.use(require('chai-as-promised'));
-    chai.use(require('chai-http'));
-    chai.use(require('sinon-chai'));
-    const sinon = require('sinon');
-    let sandbox;
-    beforeEach(function () {
-      sandbox = sinon.createSandbox();
-      sandbox.stub(service, 'render');
-    })
     it('should render', async function () {
       const body = {
         size: {
@@ -165,14 +188,26 @@ typeof describe === 'undefined' || describe('app', function () {
         error: 'hey world',
       });
     });
-    afterEach(function () {
-      sandbox.restore();
-    });
+  });
+  afterEach(function () {
+    sandbox.restore();
   });
 });
 
 const app = require('express')();
 app.use(require('body-parser').json());
+
+app.get('/:id/shaded-relief.tif', async (request, response) => {
+  const image = await service.getShadedReliefById(request.params.id);
+  if (image) {
+    response
+      .set('content-type', 'image/tiff')
+      .send(image);
+  } else {
+    response.sendStatus(404);
+  }
+});
+
 app.put('/:id', async (request, response) => {
   const { size, extent } = request.body;
   if (isSizeInvalid(size)) {

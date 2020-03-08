@@ -10,8 +10,7 @@ typeof describe === 'undefined' || describe('service', function () {
     .update(buffer)
     .digest('hex');
   it('should return shaded relief TIFF with extent matching 3dep tile', async function () {
-    const response = await request({
-      encoding: null,
+    const putResponse = await request({
       json: {
         size: {
           width: 256,
@@ -28,8 +27,16 @@ typeof describe === 'undefined' || describe('service', function () {
       resolveWithFullResponse: true,
       uri: 'http://localhost:8080/1234',
     });
-    response.headers['content-type'].should.contain('image/tiff');
-    sha1(response.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief.tif')));
+    putResponse.statusCode.should.be.lessThan(300);
+
+    const getResponse = await request({
+      encoding: null,
+      method: 'GET',
+      resolveWithFullResponse: true,
+      uri: 'http://localhost:8080/1234/shaded-relief.tif',
+    });
+    getResponse.headers['content-type'].should.contain('image/tiff');
+    sha1(getResponse.body).should.equal(sha1(fs.readFileSync('./assets/shaded-relief.tif')));
   });
   it('should return shaded relief TIFF with extent matching half 3dep tile', async function () {
     const response = await request({

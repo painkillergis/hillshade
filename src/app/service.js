@@ -3,6 +3,8 @@ const bounds = require('./bounds');
 const heightmap = require('./heightmap');
 const img = require('./img');
 
+const readFile = require('util').promisify(require('fs').readFile);
+
 const render = async ({
   extent,
   size,
@@ -13,6 +15,9 @@ const render = async ({
   return blender.renderShadedRelief({ size, scale: 2.0 });
 };
 
+const getShadedReliefById = id => readFile('/tmp/shaded-relief-0.tif');
+
 module.exports = ({
+  getShadedReliefById,
   render,
 });
