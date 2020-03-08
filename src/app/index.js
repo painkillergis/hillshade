@@ -11,7 +11,38 @@ typeof describe === 'undefined' || describe('app', function () {
   beforeEach(function () {
     sandbox = sinon.createSandbox();
     sandbox.stub(service, 'createShadedRelief');
-  })
+  });
+  describe('GET /:id', function () {
+    beforeEach(function () {
+      sandbox.stub(service, 'getMetadataById');
+    });
+    it('should return metadata by id', async function () {
+      service.getMetadataById.withArgs('the_id').resolves({ could: 'be anything' });
+
+      const response = await chai.request(app)
+        .get('/the_id');
+
+      response.should.have.status(200);
+      response.body.should.deep.equal({ could: 'be anything' });
+    });
+    it('should return 404 when metadata by id is not available', async function () {
+      service.getMetadataById.withArgs('the_id').resolves(null);
+
+      const response = await chai.request(app)
+        .get('/the_id');
+
+      response.should.have.status(404);
+    });
+    it('should return 500 when metadata by id has error', async function () {
+      service.getMetadataById.withArgs('the_id').rejects(new Error('the message'));
+
+      const response = await chai.request(app)
+        .get('/the_id');
+
+      response.should.have.status(500);
+      response.body.should.deep.equal({ error: 'the message' });
+    });
+  });
   describe('GET /:id/heightmap.tif', function () {
     it('should return heightmap tif by id', async function () {
       sandbox.stub(service, 'getHeightmapById');
@@ -171,31 +202,6 @@ typeof describe === 'undefined' || describe('app', function () {
       );
       service.createShadedRelief.should.not.have.been.called;
     });
-    it('should return 500 when service yacks', async function () {
-      service.createShadedRelief.rejects(new Error('hey world'));
-
-      const response = await chai.request(app)
-        .put('/the_id')
-        .set('content-type', 'application/json')
-        .send({
-          size: {
-            width: 256,
-            height: 256,
-          },
-          extent: {
-            left: -106,
-            right: -105,
-            top: 38,
-            bottom: 37,
-          },
-        });
-
-      response.should.have.status(500);
-      response.should.have.header('content-type', 'application/json; charset=utf-8');
-      response.body.should.deep.equal({
-        error: 'hey world',
-      });
-    });
   });
   afterEach(function () {
     sandbox.restore();
@@ -205,6 +211,17 @@ typeof describe === 'undefined' || describe('app', function () {
 const app = require('express')();
 app.use(require('body-parser').json());
 
+app.get('/:id', async (request, response) => {
+  try {
+    const metadata = await service.getMetadataById(request.params.id);
+    metadata
+      ? response.json(metadata)
+      : response.sendStatus(404);
+  } catch (error) {
+    response.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/:id/heightmap.tif', async (request, response) => {
   response
     .set('content-type', 'image/tiff')
@@ -213,13 +230,11 @@ app.get('/:id/heightmap.tif', async (request, response) => {
 
 app.get('/:id/shaded-relief.tif', async (request, response) => {
   const image = await service.getShadedReliefById(request.params.id);
-  if (image) {
-    response
+  image
+    ? response
       .set('content-type', 'image/tiff')
-      .send(image);
-  } else {
-    response.sendStatus(404);
-  }
+      .send(image)
+    : response.sendStatus(404);
 });
 
 app.put('/:id', async (request, response) => {
@@ -231,15 +246,8 @@ app.put('/:id', async (request, response) => {
     response.status(400)
       .json({ message: 'extent was malformed or missing' });
   } else {
-    try {
-      await service.createShadedRelief({ ...request.body, id: request.params.id });
-      response.sendStatus(204);
-    } catch (error) {
-      response
-        .status(500)
-        .set('content-type', 'application/json')
-        .json({ error: error.message })
-    }
+    service.createShadedRelief({ ...request.body, id: request.params.id });
+    response.sendStatus(204);
   }
 });
 

@@ -48,6 +48,30 @@ typeof describe === 'undefined' || describe('service', function () {
       ({ statusCode }) => statusCode.should.equal(204)
     ));
 
+    let status;
+    while (status != 'fulfilled') {
+      const response = await request({
+        json: true,
+        resolveWithFullResponse: true,
+        simple: false,
+        uri: 'http://localhost:8080/1234',
+      });
+      response.statusCode.should.equal(200);
+      status = response.body.status;
+    }
+
+    status = undefined;
+    while (status != 'fulfilled') {
+      const response = await request({
+        json: true,
+        resolveWithFullResponse: true,
+        simple: false,
+        uri: 'http://localhost:8080/two-plus-half',
+      });
+      response.statusCode.should.equal(200);
+      status = response.body.status;
+    }
+
     await Promise.all(
       [
         '/1234/heightmap.tif',
