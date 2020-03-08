@@ -23,6 +23,7 @@
     "testAcceptance": "mocha src/index.js",
     "testUnit": "mocha src/app",
     "testUnitForever": "nodemon --exec yarn testUnit",
-    "installAssets": "sh installAssets.sh"
+    "installAssets": "sh installAssets.sh",
+    "start": "IMG_DIRECTORY=/run/media/arctair/8183d9cd-1723-4774-900f-82ecd862d844/3dep.13.img.d node src/index.js"
   }
 }
