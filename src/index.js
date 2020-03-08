@@ -9,6 +9,16 @@ typeof describe === 'undefined' || describe('service', function () {
   const sha1 = buffer => crypto.createHash('sha1')
     .update(buffer)
     .digest('hex');
+  it('should 404 when getting non-existent image', async function () {
+    const response = await request({
+      method: 'GET',
+      resolveWithFullResponse: true,
+      simple: false,
+      uri: 'http://localhost:8080/non-existent/shaded-relief.tif',
+    });
+
+    response.statusCode.should.equal(404);
+  })
   it('should put and get shaded relief images', async function () {
     const putResponse = await request({
       json: {

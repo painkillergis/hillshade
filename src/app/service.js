@@ -3,7 +3,10 @@ const bounds = require('./bounds');
 const heightmap = require('./heightmap');
 const img = require('./img');
 
-const readFile = require('util').promisify(require('fs').readFile);
+const promisify = require('util').promisify;
+const fs = require('fs');
+const readFile = promisify(fs.readFile);
+const exists = promisify(fs.exists);
 
 const render = async ({
   id,
@@ -17,7 +20,10 @@ const render = async ({
   return getShadedReliefById(id);
 };
 
-const getShadedReliefById = id => readFile(`/tmp/${id}-0.tif`);
+const getShadedReliefById = async id => {
+  const path = `/tmp/${id}-0.tif`;
+  return await exists(path) ? readFile(path) : null;
+}
 
 module.exports = ({
   getShadedReliefById,
