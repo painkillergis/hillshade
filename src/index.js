@@ -48,22 +48,23 @@ typeof describe === 'undefined' || describe('service', function () {
       ({ statusCode }) => statusCode.should.equal(204)
     ));
 
-    const getHeightmapResponse = await request({
-      encoding: null,
-      method: 'GET',
-      resolveWithFullResponse: true,
-      uri: 'http://localhost:8080/1234/heightmap.tif',
+    await Promise.all(
+      ['1234', 'two-plus-half'].map(
+        id => request({
+          encoding: null,
+          method: 'GET',
+          resolveWithFullResponse: true,
+          uri: `http://localhost:8080/${id}/heightmap.tif`,
+        })
+      )
+    ).then(responses => {
+      responses.forEach(response => response.headers['content-type'].should.contain('image/tiff'));
+      responses
+        .map(response => sha1(response.body)).should.deep.equal([
+          sha1(fs.readFileSync('./assets/1234-heightmap.tif')),
+          sha1(fs.readFileSync('./assets/two-plus-half-heightmap.tif')),
+        ]);
     });
-    const getHeightmapResponse2 = await request({
-      encoding: null,
-      method: 'GET',
-      resolveWithFullResponse: true,
-      uri: 'http://localhost:8080/two-plus-half/heightmap.tif',
-    });
-    getHeightmapResponse.headers['content-type'].should.contain('image/tiff');
-    getHeightmapResponse2.headers['content-type'].should.contain('image/tiff');
-    sha1(getHeightmapResponse.body).should.equal(sha1(fs.readFileSync('./assets/1234-heightmap.tif')));
-    sha1(getHeightmapResponse2.body).should.equal(sha1(fs.readFileSync('./assets/two-plus-half-heightmap.tif')));
 
     const getShadedReliefResponse = await request({
       encoding: null,
