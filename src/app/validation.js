@@ -1,7 +1,33 @@
+const geojsonValidation = require('geojson-validation');
+
 typeof describe === 'undefined' || describe('validation', function () {
   const chai = require('chai');
   chai.should();
   chai.use(require('chai-as-promised'));
+  chai.use(require('sinon-chai'))
+  const sinon = require('sinon');
+  describe('isCutlineMalformed', function () {
+    let sandbox;
+    beforeEach(function () {
+      sandbox = sinon.createSandbox();
+      sandbox.stub(geojsonValidation, 'isFeatureCollection');
+    });
+    it('should be malformed when geojson-validation says so', async function () {
+      const cutline = { could: 'be anything' };
+      geojsonValidation.isFeatureCollection.withArgs(cutline).returns(true);
+
+      await isCutlineMalformed(cutline).should.eventually.equal(false);
+    });
+    it('should not be malformed when geojson-validation says so', async function () {
+      const cutline = { could: 'be anything' };
+      geojsonValidation.isFeatureCollection.withArgs(cutline).returns(false);
+
+      await isCutlineMalformed(cutline).should.eventually.equal(true);
+    });
+    afterEach(function () {
+      sandbox.restore();
+    });
+  });
   describe('isExtentMalformed', function () {
     it('should not be malformed for good extent', async function () {
       await isExtentMalformed({ left: 20, top: 45.2, right: -20.5, bottom: 0 }).should.eventually.equal(false);
@@ -59,7 +85,9 @@ typeof describe === 'undefined' || describe('validation', function () {
   });
 });
 
-const isCutlineMalformed = cutline => Promise.resolve(false);
+const isCutlineMalformed = cutline => Promise.resolve(
+  !geojsonValidation.isFeatureCollection(cutline)
+);
 
 const isExtentMalformed = extent => Promise.resolve(
   isNotObject(extent)
