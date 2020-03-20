@@ -28,7 +28,7 @@ typeof describe === 'undefined' || describe('validation', function () {
       await isExtentMalformed({ left: 20, top: 90.1, right: -20.5, bottom: 0 }).should.eventually.equal(true);
       await isExtentMalformed({ left: 20, top: 45.2, right: 180.1, bottom: 0 }).should.eventually.equal(true);
       await isExtentMalformed({ left: 20, top: 45.2, right: -20.5, bottom: -90.1 }).should.eventually.equal(true);
-    })
+    });
   });
   describe('isSizeMalformed', function () {
     it('should be malformed for incorrect data type', async function () {
@@ -59,6 +59,8 @@ typeof describe === 'undefined' || describe('validation', function () {
   });
 });
 
+const isCutlineMalformed = cutline => Promise.resolve(false);
+
 const isExtentMalformed = extent => Promise.resolve(
   isNotObject(extent)
   || typeof extent.left !== 'number'
@@ -86,4 +88,4 @@ const isWholeNumberMalformed = dimension =>
   || dimension % 1 !== 0
   || dimension < 0;
 
-module.exports = { isExtentMalformed, isSizeMalformed };
+module.exports = { isCutlineMalformed, isExtentMalformed, isSizeMalformed };

@@ -12,6 +12,7 @@ typeof describe === 'undefined' || describe('app', function () {
   beforeEach(function () {
     sandbox = sinon.createSandbox();
     sandbox.stub(service, 'createShadedRelief');
+    sandbox.stub(validation, 'isCutlineMalformed');
     sandbox.stub(validation, 'isExtentMalformed');
     sandbox.stub(validation, 'isSizeMalformed');
   });
@@ -84,9 +85,11 @@ typeof describe === 'undefined' || describe('app', function () {
     });
   });
   describe('PUT /:id', function () {
-    it('should render', async function () {
+    it('should render with extent and size', async function () {
       const extent = { could: 'be any extent' };
       const size = { could: 'be any size' };
+      validation.isExtentMalformed.withArgs(extent).resolves(false);
+      validation.isSizeMalformed.withArgs(size).resolves(false);
 
       const response = await chai.request(app)
         .put('/the_id')
@@ -96,7 +99,36 @@ typeof describe === 'undefined' || describe('app', function () {
       response.should.have.status(204);
       service.createShadedRelief.should.have.been.calledWith({ extent, size, id: 'the_id' });
     });
-    it('should return 400 for missing extent', async function () {
+    it('should render with cutline and size', async function () {
+      const cutline = { could: 'be any cutline' };
+      const size = { could: 'be any size' };
+      validation.isCutlineMalformed.withArgs(cutline).resolves(false);
+      validation.isSizeMalformed.withArgs(size).resolves(false);
+
+      const response = await chai.request(app)
+        .put('/the_id')
+        .set('content-type', 'application/json')
+        .send({ cutline, size });
+
+      response.should.have.status(204);
+      service.createShadedRelief.should.have.been.calledWith({ cutline, size, id: 'the_id' });
+    });
+    it('should return 400 for malformed cutline', async function () {
+      const cutline = { could: 'be any cutline' };
+      const size = { could: 'be any size' };
+      validation.isCutlineMalformed.withArgs(cutline).resolves(true);
+
+      const response = await chai.request(app)
+        .put('/the_id')
+        .set('content-type', 'application/json')
+        .send({ cutline, size });
+
+      response.should.have.status(400);
+      response.should.have.header('content-type', 'application/json; charset=utf-8');
+      response.body.should.deep.equal({ message: 'cutline is malformed' });
+      service.createShadedRelief.should.not.have.been.called;
+    });
+    it('should return 400 for missing cutline or extent', async function () {
       const size = { could: 'be any size' };
 
       const response = await chai.request(app)
@@ -106,7 +138,7 @@ typeof describe === 'undefined' || describe('app', function () {
 
       response.should.have.status(400);
       response.should.have.header('content-type', 'application/json; charset=utf-8');
-      response.body.should.deep.equal({ message: 'extent is missing' });
+      response.body.should.deep.equal({ message: 'cutline or extent is missing' });
       service.createShadedRelief.should.not.have.been.called;
     });
     it('should return 400 for malformed extent', async function () {
@@ -188,17 +220,20 @@ app.get('/:id/shaded-relief.tif', async (request, response) => {
 });
 
 app.put('/:id', async (request, response) => {
-  const { size, extent } = request.body;
-  if (extent == null) {
+  const { cutline, extent, size } = request.body;
+  if (cutline == null && extent == null) {
     response.status(400)
-      .json({ message: 'extent is missing' });
-  } else if (validation.isExtentMalformed(extent)) {
+      .json({ message: 'cutline or extent is missing' });
+  } else if (cutline && await validation.isCutlineMalformed(cutline)) {
+    response.status(400)
+      .json({ message: 'cutline is malformed' });
+  } else if (extent && await validation.isExtentMalformed(extent)) {
     response.status(400)
       .json({ message: 'extent is malformed' });
   } else if (size == null) {
     response.status(400)
       .json({ message: 'size is missing' });
-  } else if (validation.isSizeMalformed(size)) {
+  } else if (await validation.isSizeMalformed(size)) {
     response.status(400)
       .json({ message: 'size is malformed' });
   } else {
