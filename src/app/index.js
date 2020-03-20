@@ -1,4 +1,5 @@
 const service = require('./service');
+const validation = require('./validation');
 
 typeof describe === 'undefined' || describe('app', function () {
   const chai = require('chai');
@@ -11,6 +12,8 @@ typeof describe === 'undefined' || describe('app', function () {
   beforeEach(function () {
     sandbox = sinon.createSandbox();
     sandbox.stub(service, 'createShadedRelief');
+    sandbox.stub(validation, 'isExtentMalformed');
+    sandbox.stub(validation, 'isSizeMalformed');
   });
   describe('GET /:id', function () {
     beforeEach(function () {
@@ -82,124 +85,71 @@ typeof describe === 'undefined' || describe('app', function () {
   });
   describe('PUT /:id', function () {
     it('should render', async function () {
-      const body = {
-        size: {
-          width: 256,
-          height: 256,
-        },
-        extent: {
-          left: -106,
-          right: -105,
-          top: 38,
-          bottom: 37,
-        },
-      };
+      const extent = { could: 'be any extent' };
+      const size = { could: 'be any size' };
 
       const response = await chai.request(app)
         .put('/the_id')
         .set('content-type', 'application/json')
-        .send(body);
+        .send({ extent, size });
 
       response.should.have.status(204);
-      service.createShadedRelief.should.have.been.calledWith({ ...body, id: 'the_id' });
+      service.createShadedRelief.should.have.been.calledWith({ extent, size, id: 'the_id' });
     });
-    it('should return 400 for malformed/incomplete size', async function () {
-      sizes = [
-        {
-          width: 'not great',
-          height: 256,
-        },
-        {
-          width: 256,
-          height: 'not great',
-        },
-        {},
-        [],
-        19,
-        null,
-      ];
+    it('should return 400 for missing extent', async function () {
+      const size = { could: 'be any size' };
 
-      await Promise.all(
-        sizes.map(
-          async size => {
-            const response = await chai.request(app)
-              .put('/the_id')
-              .set('content-type', 'application/json')
-              .send({
-                size,
-                extent: {
-                  left: -106,
-                  right: -105,
-                  top: 38,
-                  bottom: 37,
-                },
-              });
+      const response = await chai.request(app)
+        .put('/the_id')
+        .set('content-type', 'application/json')
+        .send({ size });
 
-            response.should.have.status(400);
-            response.should.have.header('content-type', 'application/json; charset=utf-8');
-            response.body.should.deep.equal({
-              message: 'size was malformed or missing',
-            });
-          }
-        )
-      )
+      response.should.have.status(400);
+      response.should.have.header('content-type', 'application/json; charset=utf-8');
+      response.body.should.deep.equal({ message: 'extent is missing' });
       service.createShadedRelief.should.not.have.been.called;
     });
-    it('should return 400 for malformed/incomplete extent', async function () {
-      extents = [
-        {
-          right: -105,
-          top: 38,
-          bottom: 37,
-        },
-        {
-          left: -106,
-          top: 38,
-          bottom: 37,
-        },
-        {
-          left: -106,
-          right: -105,
-          bottom: 37,
-        },
-        {
-          left: -106,
-          right: -105,
-          top: 38,
-        },
-        {
-          left: 'DEVIOUS',
-          right: -105,
-          top: 38,
-          bottom: 37,
-        },
-        20,
-        [],
-        null,
-      ]
+    it('should return 400 for malformed extent', async function () {
+      const extent = { could: 'be any extent' };
+      const size = { could: 'be any size' };
+      validation.isExtentMalformed.withArgs(extent).resolves(true);
 
-      await Promise.all(
-        extents.map(
-          async extent => {
-            const response = await chai.request(app)
-              .put('/the_id')
-              .set('content-type', 'application/json')
-              .send({
-                size: {
-                  width: 256,
-                  height: 256,
-                },
-                extent,
-              });
+      const response = await chai.request(app)
+        .put('/the_id')
+        .set('content-type', 'application/json')
+        .send({ extent, size });
 
-            response.should.have.status(400);
-            response.should.have.header('content-type', 'application/json; charset=utf-8');
-            response.body.should.deep.equal({
-              message: 'extent was malformed or missing',
-            });
-          }
-        )
-      );
+      response.should.have.status(400);
+      response.should.have.header('content-type', 'application/json; charset=utf-8');
+      response.body.should.deep.equal({ message: 'extent is malformed' });
+      service.createShadedRelief.should.not.have.been.called;
+    });
+    it('should return 400 for missing size', async function () {
+      const extent = { could: 'be any extent' };
+
+      const response = await chai.request(app)
+        .put('/the_id')
+        .set('content-type', 'application/json')
+        .send({ extent });
+
+      response.should.have.status(400);
+      response.should.have.header('content-type', 'application/json; charset=utf-8');
+      response.body.should.deep.equal({ message: 'size is missing' });
+      service.createShadedRelief.should.not.have.been.called;
+    });
+    it('should return 400 for malformed size', async function () {
+      const extent = { could: 'be any extent' };
+      const size = { could: 'be any size' };
+      validation.isSizeMalformed.withArgs(size).resolves(true);
+
+      const response = await chai.request(app)
+        .put('/the_id')
+        .set('content-type', 'application/json')
+        .send({ extent, size });
+
+      response.should.have.status(400);
+      response.should.have.header('content-type', 'application/json; charset=utf-8');
+      response.body.should.deep.equal({ message: 'size is malformed' });
       service.createShadedRelief.should.not.have.been.called;
     });
   });
@@ -239,28 +189,22 @@ app.get('/:id/shaded-relief.tif', async (request, response) => {
 
 app.put('/:id', async (request, response) => {
   const { size, extent } = request.body;
-  if (isSizeInvalid(size)) {
+  if (extent == null) {
     response.status(400)
-      .json({ message: 'size was malformed or missing' });
-  } else if (isExtentInvalid(extent)) {
+      .json({ message: 'extent is missing' });
+  } else if (validation.isExtentMalformed(extent)) {
     response.status(400)
-      .json({ message: 'extent was malformed or missing' });
+      .json({ message: 'extent is malformed' });
+  } else if (size == null) {
+    response.status(400)
+      .json({ message: 'size is missing' });
+  } else if (validation.isSizeMalformed(size)) {
+    response.status(400)
+      .json({ message: 'size is malformed' });
   } else {
     service.createShadedRelief({ ...request.body, id: request.params.id });
     response.sendStatus(204);
   }
 });
-
-const isSizeInvalid = size => size === null
-  || typeof size !== 'object'
-  || typeof size.height !== 'number'
-  || typeof size.width !== 'number'
-
-const isExtentInvalid = extent => extent === null
-  || typeof extent !== 'object'
-  || typeof extent.left !== 'number'
-  || typeof extent.top !== 'number'
-  || typeof extent.right !== 'number'
-  || typeof extent.bottom !== 'number'
 
 module.exports = app;
