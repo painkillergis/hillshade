@@ -191,7 +191,7 @@ typeof describe === 'undefined' || describe('app', function () {
 });
 
 const app = require('express')();
-app.use(require('body-parser').json());
+app.use(require('body-parser').json({ limit: '1mb' }));
 
 app.get('/:id', async (request, response) => {
   try {
