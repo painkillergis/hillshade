@@ -13,7 +13,7 @@ srcMin, srcMax = map(
   [band.GetMinimum(), band.GetMaximum()],
 )
 
-if args['cutline']:
+if 'cutline' in args:
   cutlineAsFile = f'/tmp/{uuid4()}'
   with open(cutlineAsFile, 'w') as f:
     json.dump(args['cutline'], f)
