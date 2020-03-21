@@ -48,8 +48,8 @@ typeof describe === 'undefined' || describe('service', function () {
       ({ statusCode }) => statusCode.should.equal(204)
     ));
 
-    let status;
-    while (status != 'fulfilled') {
+    let body = {};
+    while (!body.status || body.status == 'processing') {
       const response = await request({
         json: true,
         resolveWithFullResponse: true,
@@ -57,11 +57,14 @@ typeof describe === 'undefined' || describe('service', function () {
         uri: 'http://localhost:8080/1234',
       });
       response.statusCode.should.equal(200);
-      status = response.body.status;
+      body = response.body;
+    }
+    if (body.status !== 'fulfilled') {
+      throw Error('Render was not fulfilled\n' + JSON.stringify(body))
     }
 
-    status = undefined;
-    while (status != 'fulfilled') {
+    body = {};
+    while (!body.status || body.status == 'processing') {
       const response = await request({
         json: true,
         resolveWithFullResponse: true,
@@ -69,7 +72,10 @@ typeof describe === 'undefined' || describe('service', function () {
         uri: 'http://localhost:8080/two-plus-half',
       });
       response.statusCode.should.equal(200);
-      status = response.body.status;
+      body = response.body;
+    }
+    if (body.status !== 'fulfilled') {
+      throw Error('Render was not fulfilled\n' + JSON.stringify(body))
     }
 
     await Promise.all(
