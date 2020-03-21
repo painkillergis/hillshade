@@ -5,7 +5,7 @@ rasterInPath, rasterOutPath = sys.argv[1:3]
 width, height = map(int, sys.argv[3:5])
 left, top, right, bottom = map(float, sys.argv[5:9])
 
-warpPath = rasterOutPath + '.warp.tif'
+warpPath = '/vsimem/' + rasterOutPath + '.warp.tif'
 
 raster = gdal.Open(rasterInPath)
 band = raster.GetRasterBand(1)
@@ -35,4 +35,4 @@ gdal.Translate(
   ),
 )
 
-os.remove(warpPath)
+gdal.Unlink(warpPath)
