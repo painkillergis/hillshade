@@ -2,11 +2,12 @@ const spawn = require('child_process').spawn;
 
 const renderShadedRelief = ({
   id,
+  onProgress,
+  scale,
   size: {
     width,
     height,
   },
-  scale,
 }) => {
   const child = spawn(
     'blender',
@@ -26,6 +27,15 @@ const renderShadedRelief = ({
   const stderr = [];
   child.stderr.setEncoding('utf8');
   child.stderr.on('data', data => stderr.push(data));
+  child.stdout.setEncoding('utf8');
+  const pattern = /(\d+)\/(\d+) Tiles/
+  child.stdout.on('data', data => {
+    const match = pattern.exec(data);
+    if (match) {
+      const [_, current, total] = match;
+      onProgress(parseInt(current) / parseInt(total));
+    }
+  });
   return new Promise((resolve, reject) => {
     child.addListener('exit', code => code === 0 ? resolve() : reject(stderr.join('')));
   });

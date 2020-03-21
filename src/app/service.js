@@ -9,6 +9,8 @@ const readFile = promisify(fs.readFile);
 const exists = promisify(fs.exists);
 
 const metadataById = new Map();
+const statusById = new Map();
+const progressById = new Map();
 
 const createShadedRelief = async ({
   id,
@@ -17,7 +19,9 @@ const createShadedRelief = async ({
   size,
 }) => {
   try {
-    metadataById.set(id, { cutline, extent, size, status: 'processing' });
+    metadataById.set(id, { cutline, extent, size });
+    statusById.set(id, { status: 'processing' });
+    progressById.set(id, 0);
     const imgPaths = img.pathsFromUpperLefts(
       cutline
         ? await upperLefts.fromFeatureCollection(cutline)
@@ -30,10 +34,15 @@ const createShadedRelief = async ({
       imgPaths,
       size,
     });
-    await blender.renderShadedRelief({ id, size, scale: 2.0 });
-    metadataById.set(id, { cutline, extent, size, status: 'fulfilled' });
+    await blender.renderShadedRelief({
+      id,
+      onProgress: progress => progressById.set(id, progress),
+      scale: 2.0,
+      size,
+    });
+    statusById.set(id, { status: 'fulfilled' });
   } catch (error) {
-    metadataById.set(id, { cutline, extent, size, status: 'error', error: error.message });
+    statusById.set(id, { status: 'error', error: error.message });
   }
 };
 
@@ -42,7 +51,11 @@ const getHeightmapById = async id => {
   return await exists(path) ? readFile(path) : null;
 };
 
-const getMetadataById = id => metadataById.get(id);
+const getMetadataById = id => ({
+  ...metadataById.get(id),
+  ...statusById.get(id),
+  progress: progressById.get(id),
+});
 
 const getShadedReliefById = async id => {
   const path = `/tmp/${id}-0.tif`;
