@@ -10,8 +10,7 @@ const childToPromise = child => new Promise((resolve, reject) => {
   child.stdout.on('data', data => stdout.push(data))
   child.stderr.setEncoding('utf8')
   child.stderr.on('data', data => stderr.push(data))
-  child.addListener('error', () => reject({ stderr, stdout }));
-  child.addListener('exit', () => resolve({ stderr, stdout }));
+  child.addListener('exit', code => code === 0 ? resolve({ stderr, stdout }) : reject({ stderr, stdout }));
 });
 
 const generate = async ({
