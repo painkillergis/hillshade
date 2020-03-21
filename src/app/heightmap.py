@@ -1,13 +1,11 @@
 from osgeo import gdal, gdalconst
-import json, os, sys
+from uuid import uuid4
+import json, sys
 
-rasterInPath, rasterOutPath = sys.argv[1:3]
-width, height = map(int, sys.argv[3:5])
-left, top, right, bottom = map(float, sys.argv[5:9])
+args = json.load(sys.stdin)
+warpPath = ''.join(['/vsimem/', args['outRaster'], '.warp.tif'])
 
-warpPath = '/vsimem/' + rasterOutPath + '.warp.tif'
-
-raster = gdal.Open(rasterInPath)
+raster = gdal.Open(args['inRaster'])
 band = raster.GetRasterBand(1)
 band.ComputeStatistics(0) # because USGS lies
 srcMin, srcMax = map(
@@ -15,19 +13,36 @@ srcMin, srcMax = map(
   [band.GetMinimum(), band.GetMaximum()],
 )
 
-gdal.Warp(
-  warpPath,
-  rasterInPath,
-  options = gdal.WarpOptions(
-    outputBounds = [left, bottom, right, top],
-    width = width,
-    height = height,
-    resampleAlg = 'bilinear',
-  ),
-)
+if args['cutline']:
+  cutlineAsFile = f'/tmp/{uuid4()}'
+  with open(cutlineAsFile, 'w') as f:
+    json.dump(args['cutline'], f)
+  gdal.Warp(
+    warpPath,
+    args['inRaster'],
+    options = gdal.WarpOptions(
+      width = args['size']['width'],
+      height = args['size']['height'],
+      resampleAlg = 'bilinear',
+      cutlineDSName = cutlineAsFile,
+      cropToCutline = True,
+    ),
+  )
+  gdal.Unlink(cutlineAsFile)
+else:
+  gdal.Warp(
+    warpPath,
+    args['inRaster'],
+    options = gdal.WarpOptions(
+      outputBounds = [args['extent']['left'], args['extent']['bottom'], args['extent']['right'], args['extent']['top']],
+      width = args['size']['width'],
+      height = args['size']['height'],
+      resampleAlg = 'bilinear',
+    ),
+  )
 
 gdal.Translate(
-  rasterOutPath,
+  args['outRaster'],
   warpPath,
   options = gdal.TranslateOptions(
     scaleParams = [[srcMin, srcMax, 8192, 65533]],
@@ -36,3 +51,4 @@ gdal.Translate(
 )
 
 gdal.Unlink(warpPath)
+print(args['outRaster'])

@@ -23,10 +23,10 @@ typeof describe === 'undefined' || describe('service', function () {
     await Promise.all(
       [
         {
-          id: '1234',
+          id: '4321',
           json: {
-            size: { width: 256, height: 256 },
-            extent: { left: -106, right: -105, top: 38, bottom: 37 },
+            cutline: require('../assets/cutline.json'),
+            size: { width: 128, height: 128 },
           },
         },
         {
@@ -54,7 +54,7 @@ typeof describe === 'undefined' || describe('service', function () {
         json: true,
         resolveWithFullResponse: true,
         simple: false,
-        uri: 'http://localhost:8080/1234',
+        uri: 'http://localhost:8080/4321',
       });
       response.statusCode.should.equal(200);
       body = response.body;
@@ -80,9 +80,9 @@ typeof describe === 'undefined' || describe('service', function () {
 
     await Promise.all(
       [
-        '/1234/heightmap.tif',
+        '/4321/heightmap.tif',
         '/two-plus-half/heightmap.tif',
-        '/1234/shaded-relief.tif',
+        '/4321/shaded-relief.tif',
         '/two-plus-half/shaded-relief.tif',
       ].map(
         path => request({
@@ -96,9 +96,9 @@ typeof describe === 'undefined' || describe('service', function () {
       responses.forEach(response => response.headers['content-type'].should.contain('image/tiff'));
       responses
         .map(response => sha1(response.body)).should.deep.equal([
-          sha1(fs.readFileSync('./assets/1234-heightmap.tif')),
+          sha1(fs.readFileSync('./assets/4321-heightmap.tif')),
           sha1(fs.readFileSync('./assets/two-plus-half-heightmap.tif')),
-          sha1(fs.readFileSync('./assets/shaded-relief.tif')),
+          sha1(fs.readFileSync('./assets/4321-shaded-relief.tif')),
           sha1(fs.readFileSync('./assets/shaded-relief-two-plus-half.tif')),
         ]);
     });

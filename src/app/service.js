@@ -1,5 +1,5 @@
 const blender = require('./blender');
-const bounds = require('./bounds');
+const upperLefts = require('./upperLefts');
 const heightmap = require('./heightmap');
 const img = require('./img');
 
@@ -12,18 +12,28 @@ const metadataById = new Map();
 
 const createShadedRelief = async ({
   id,
+  cutline,
   extent,
   size,
 }) => {
   try {
-    metadataById.set(id, { extent, size, status: 'processing' });
-    const upperLefts = bounds.toUpperLefts(extent);
-    const imgPaths = img.pathsFromUpperLefts(upperLefts);
-    await heightmap.generate({ id, imgPaths, extent, size });
+    metadataById.set(id, { cutline, extent, size, status: 'processing' });
+    const imgPaths = img.pathsFromUpperLefts(
+      cutline
+        ? await upperLefts.fromFeatureCollection(cutline)
+        : upperLefts.fromExtent(extent)
+    );
+    await heightmap.generate({
+      cutline,
+      extent,
+      id,
+      imgPaths,
+      size,
+    });
     await blender.renderShadedRelief({ id, size, scale: 2.0 });
-    metadataById.set(id, { extent, size, status: 'fulfilled' });
+    metadataById.set(id, { cutline, extent, size, status: 'fulfilled' });
   } catch (error) {
-    metadataById.set(id, { extent, size, status: 'error', error: error.message });
+    metadataById.set(id, { cutline, extent, size, status: 'error', error: error.message });
   }
 };
 
