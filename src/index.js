@@ -1,14 +1,20 @@
 typeof describe === 'undefined' || describe('service', function () {
   this.timeout(0)
   const chai = require('chai');
-  const crypto = require('crypto');
   const fs = require('fs');
+  const promisify = require('util').promisify;
+  const exec = promisify(require('child_process').exec);
+  const existsSync = fs.existsSync;
   const request = require('request-promise');
+  const unlink = promisify(require('fs').unlink);
+  const uuid4 = require('uuid').v4;
+  const writeFile = promisify(require('fs').writeFile);
   chai.should();
   chai.use(require('chai-as-promised'));
-  const sha1 = buffer => crypto.createHash('sha1')
-    .update(buffer)
-    .digest('hex');
+  let tmpFile;
+  before(function () {
+    tmpFile = `/tmp/${uuid4()}`;
+  })
   it('should 404 when getting non-existent image', async function () {
     const response = await request({
       method: 'GET',
@@ -78,7 +84,7 @@ typeof describe === 'undefined' || describe('service', function () {
       throw Error('Render was not fulfilled\n' + JSON.stringify(body))
     }
 
-    await Promise.all(
+    const rasters = await Promise.all(
       [
         '/4321/heightmap.tif',
         '/two-plus-half/heightmap.tif',
@@ -94,16 +100,23 @@ typeof describe === 'undefined' || describe('service', function () {
       ),
     ).then(responses => {
       responses.forEach(response => response.headers['content-type'].should.contain('image/tiff'));
-      responses
-        .map(response => sha1(response.body)).should.deep.equal([
-          sha1(fs.readFileSync('./assets/4321-heightmap.tif')),
-          sha1(fs.readFileSync('./assets/two-plus-half-heightmap.tif')),
-          sha1(fs.readFileSync('./assets/4321-shaded-relief.tif')),
-          sha1(fs.readFileSync('./assets/shaded-relief-two-plus-half.tif')),
-        ]);
+      return responses.map(response => response.body);
     });
+    await writeFile(tmpFile, rasters[0]);
+    (await exec(`gdalcompare.py assets/4321-heightmap.tif ${tmpFile}`))
+      .stdout.should.equal('Differences Found: 0\n');
+    await writeFile(tmpFile, rasters[1]);
+    (await exec(`gdalcompare.py assets/two-plus-half-heightmap.tif ${tmpFile}`))
+      .stdout.should.equal('Differences Found: 0\n');
+    await writeFile(tmpFile, rasters[2]);
+    (await exec(`gdalcompare.py assets/4321-shaded-relief.tif ${tmpFile}`))
+      .stdout.should.equal('Differences Found: 0\n');
+    await writeFile(tmpFile, rasters[3]);
+    (await exec(`gdalcompare.py assets/shaded-relief-two-plus-half.tif ${tmpFile}`))
+      .stdout.should.equal('Differences Found: 0\n');
   });
-  after(function () {
+  after(async function () {
+    if (existsSync(tmpFile)) await unlink(tmpFile);
     server.close();
   });
 });
