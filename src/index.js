@@ -33,6 +33,7 @@ typeof describe === 'undefined' || describe('service', function () {
           json: {
             cutline: require('../assets/cutline.json'),
             size: { width: 128, height: 128 },
+            margin: 16,
           },
         },
         {
@@ -103,16 +104,16 @@ typeof describe === 'undefined' || describe('service', function () {
       return responses.map(response => response.body);
     });
     await writeFile(tmpFile, rasters[0]);
-    (await exec(`gdalcompare.py assets/4321-heightmap.tif ${tmpFile}`))
+    (await exec(`gdalcompare.py assets/4321-heightmap.tif ${tmpFile} || exit 0`))
       .stdout.should.equal('Differences Found: 0\n');
     await writeFile(tmpFile, rasters[1]);
-    (await exec(`gdalcompare.py assets/two-plus-half-heightmap.tif ${tmpFile}`))
+    (await exec(`gdalcompare.py assets/two-plus-half-heightmap.tif ${tmpFile} || exit 0`))
       .stdout.should.equal('Differences Found: 0\n');
     await writeFile(tmpFile, rasters[2]);
-    (await exec(`gdalcompare.py assets/4321-shaded-relief.tif ${tmpFile}`))
+    (await exec(`gdalcompare.py assets/4321-shaded-relief.tif ${tmpFile} || exit 0`))
       .stdout.should.equal('Differences Found: 0\n');
     await writeFile(tmpFile, rasters[3]);
-    (await exec(`gdalcompare.py assets/shaded-relief-two-plus-half.tif ${tmpFile}`))
+    (await exec(`gdalcompare.py assets/two-plus-half-shaded-relief.tif ${tmpFile} || exit 0`))
       .stdout.should.equal('Differences Found: 0\n');
   });
   after(async function () {

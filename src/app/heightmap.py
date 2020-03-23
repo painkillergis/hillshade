@@ -1,10 +1,20 @@
-from osgeo import gdal, gdalconst
+from osgeo import gdal, gdalconst, osr, ogr
 from uuid import uuid4
+import numpy as np
 import json, sys
 
 args = json.load(sys.stdin)
-warpPath = ''.join(['/vsimem/', args['outRaster'], '.warp.tif'])
 
+if 'margin' in args:
+  margin = args['margin']
+else:
+  margin = 0
+
+warpPath = f'/vsimem/{uuid4()}.tif'
+paddedWarpPath = f'/vsimem/{uuid4()}.tif'
+cutlineAsFile = f'/tmp/{uuid4()}'
+
+# TODO calculate srcmin/max from warp
 raster = gdal.Open(args['inRaster'])
 band = raster.GetRasterBand(1)
 band.ComputeStatistics(0) # because USGS lies
@@ -14,10 +24,9 @@ srcMin, srcMax = map(
 )
 
 if 'cutline' in args:
-  cutlineAsFile = f'/tmp/{uuid4()}'
   with open(cutlineAsFile, 'w') as f:
     json.dump(args['cutline'], f)
-  gdal.Warp(
+  warpDataSource = gdal.Warp(
     warpPath,
     args['inRaster'],
     options = gdal.WarpOptions(
@@ -30,7 +39,7 @@ if 'cutline' in args:
   )
   gdal.Unlink(cutlineAsFile)
 else:
-  gdal.Warp(
+  warpDataSource = gdal.Warp(
     warpPath,
     args['inRaster'],
     options = gdal.WarpOptions(
@@ -46,14 +55,52 @@ else:
     ),
   )
 
-gdal.Translate(
-  args['outRaster'],
-  warpPath,
-  options = gdal.TranslateOptions(
-    scaleParams = [[srcMin, srcMax, 8192, 65533]],
-    outputType = gdalconst.GDT_UInt16,
-  ),
-)
+if margin:
+  def padGeoTransform(geoTransform, margin):
+    left, widthResolution, i0, top, i1, heightResolution = geoTransform
+    return (
+      left - widthResolution * margin,
+      widthResolution,
+      i0,
+      top - heightResolution * margin,
+      i1,
+      heightResolution,
+    )
+  paddedArray = np.pad(warpDataSource.ReadAsArray(), margin, mode='constant', constant_values=0)
+  height, width = np.shape(paddedArray)
+  paddedWarpDataSource = gdal.GetDriverByName('GTiff').Create(
+    paddedWarpPath,
+    width,
+    height,
+    1,
+    warpDataSource.GetRasterBand(1).DataType,
+  )
+  paddedWarpDataSource.GetRasterBand(1).WriteArray(paddedArray)
+  paddedWarpDataSource.GetRasterBand(1).SetNoDataValue(warpDataSource.GetRasterBand(1).GetNoDataValue())
+  paddedWarpDataSource.SetGeoTransform(padGeoTransform(warpDataSource.GetGeoTransform(), margin))
+  paddedWarpDataSource.SetProjection(warpDataSource.GetProjection())
+  warpDataSource = None
+  gdal.Unlink(warpPath)
+  gdal.Translate(
+    args['outRaster'],
+    paddedWarpDataSource,
+    options = gdal.TranslateOptions(
+      scaleParams = [[srcMin, srcMax, 8192, 65533]],
+      outputType = gdalconst.GDT_UInt16,
+    ),
+  )
+  paddedWarpDataSource = None
+  gdal.Unlink(paddedWarpPath)
+else:
+  gdal.Translate(
+    args['outRaster'],
+    warpDataSource,
+    options = gdal.TranslateOptions(
+      scaleParams = [[srcMin, srcMax, 8192, 65533]],
+      outputType = gdalconst.GDT_UInt16,
+    ),
+  )
+  warpDataSource = None
+  gdal.Unlink(warpPath)
 
-gdal.Unlink(warpPath)
 print(args['outRaster'])

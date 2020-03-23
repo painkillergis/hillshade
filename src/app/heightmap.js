@@ -18,6 +18,7 @@ const generate = async ({
   extent,
   id,
   imgPaths,
+  margin,
   size
 }) => {
   await exec([
@@ -35,6 +36,7 @@ const generate = async ({
       cutline,
       extent,
       inRaster: `/tmp/${id}-elevation.vrt`,
+      margin,
       outRaster: `/tmp/${id}-heightmap.tif`,
       size,
     }),

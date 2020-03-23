@@ -12,6 +12,7 @@ typeof describe === 'undefined' || describe('app', function () {
   beforeEach(function () {
     sandbox = sinon.createSandbox();
     sandbox.stub(service, 'createShadedRelief');
+    sandbox.stub(validation, 'isMarginMalformed');
     sandbox.stub(validation, 'isCutlineMalformed');
     sandbox.stub(validation, 'isExtentMalformed');
     sandbox.stub(validation, 'isSizeMalformed');
@@ -90,6 +91,7 @@ typeof describe === 'undefined' || describe('app', function () {
       const size = { could: 'be any size' };
       validation.isExtentMalformed.withArgs(extent).resolves(false);
       validation.isSizeMalformed.withArgs(size).resolves(false);
+      validation.isMarginMalformed.resolves(true);
 
       const response = await chai.request(app)
         .put('/the_id')
@@ -112,6 +114,19 @@ typeof describe === 'undefined' || describe('app', function () {
 
       response.should.have.status(204);
       service.createShadedRelief.should.have.been.calledWith({ cutline, size, id: 'the_id' });
+    });
+    it('should render with margin', async function () {
+      const cutline = { could: 'be any cutline' };
+      const size = { could: 'be any size' };
+      const margin = 32;
+
+      const response = await chai.request(app)
+        .put('/the_id')
+        .set('content-type', 'application/json')
+        .send({ cutline, margin, size });
+
+      response.should.have.status(204);
+      service.createShadedRelief.should.have.been.calledWith({ cutline, margin, size, id: 'the_id' });
     });
     it('should return 400 for malformed cutline', async function () {
       const cutline = { could: 'be any cutline' };
@@ -156,6 +171,22 @@ typeof describe === 'undefined' || describe('app', function () {
       response.body.should.deep.equal({ message: 'extent is malformed' });
       service.createShadedRelief.should.not.have.been.called;
     });
+    it('should return 400 for malformed margin', async function () {
+      const cutline = { could: 'be any cutline' };
+      const size = { could: 'be any size' };
+      const margin = 'bad bad margin';
+      validation.isMarginMalformed.withArgs(margin).resolves(true);
+
+      const response = await chai.request(app)
+        .put('/the_id')
+        .set('content-type', 'application/json')
+        .send({ cutline, margin, size });
+
+      response.should.have.status(400);
+      response.should.have.header('content-type', 'application/json; charset=utf-8');
+      response.body.should.deep.equal({ message: 'margin is malformed' });
+      service.createShadedRelief.should.not.have.been.called;
+    })
     it('should return 400 for missing size', async function () {
       const extent = { could: 'be any extent' };
 
@@ -220,7 +251,7 @@ app.get('/:id/shaded-relief.tif', async (request, response) => {
 });
 
 app.put('/:id', async (request, response) => {
-  const { cutline, extent, size } = request.body;
+  const { cutline, extent, margin, size } = request.body;
   if (cutline == null && extent == null) {
     response.status(400)
       .json({ message: 'cutline or extent is missing' });
@@ -236,6 +267,9 @@ app.put('/:id', async (request, response) => {
   } else if (await validation.isSizeMalformed(size)) {
     response.status(400)
       .json({ message: 'size is malformed' });
+  } else if (margin != null && await validation.isMarginMalformed(margin)) {
+    response.status(400)
+      .json({ message: 'margin is malformed' });
   } else {
     service.createShadedRelief({ ...request.body, id: request.params.id });
     response.sendStatus(204);

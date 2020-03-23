@@ -16,6 +16,7 @@ const createShadedRelief = async ({
   id,
   cutline,
   extent,
+  margin,
   size,
 }) => {
   try {
@@ -32,6 +33,7 @@ const createShadedRelief = async ({
       extent,
       id,
       imgPaths,
+      margin,
       size,
     });
     await blender.renderShadedRelief({
