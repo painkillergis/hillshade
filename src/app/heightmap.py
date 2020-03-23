@@ -34,7 +34,12 @@ else:
     warpPath,
     args['inRaster'],
     options = gdal.WarpOptions(
-      outputBounds = [args['extent']['left'], args['extent']['bottom'], args['extent']['right'], args['extent']['top']],
+      outputBounds = [
+        args['extent']['left'],
+        args['extent']['bottom'],
+        args['extent']['right'],
+        args['extent']['top'],
+      ],
       width = args['size']['width'],
       height = args['size']['height'],
       resampleAlg = 'bilinear',
