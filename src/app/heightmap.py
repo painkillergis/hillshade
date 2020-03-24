@@ -14,15 +14,6 @@ warpPath = f'/vsimem/{uuid4()}.tif'
 paddedWarpPath = f'/vsimem/{uuid4()}.tif'
 cutlineAsFile = f'/tmp/{uuid4()}'
 
-# TODO calculate srcmin/max from warp
-raster = gdal.Open(args['inRaster'])
-band = raster.GetRasterBand(1)
-band.ComputeStatistics(0) # because USGS lies
-srcMin, srcMax = map(
-  lambda v: round(v, 3),
-  [band.GetMinimum(), band.GetMaximum()],
-)
-
 if 'cutline' in args:
   with open(cutlineAsFile, 'w') as f:
     json.dump(args['cutline'], f)
@@ -54,6 +45,10 @@ else:
       resampleAlg = 'bilinear',
     ),
   )
+
+warpBand = warpDataSource.GetRasterBand(1)
+warpBand.ComputeStatistics(0) # because USGS lies
+srcMin, srcMax = warpBand.GetMinimum(), warpBand.GetMaximum()
 
 if margin:
   def padGeoTransform(geoTransform, margin):
