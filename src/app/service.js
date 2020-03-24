@@ -30,6 +30,7 @@ const createShadedRelief = async ({
     );
     await heightmap.generate({
       cutline,
+      destination: `/tmp/${id}-heightmap.tif`,
       extent,
       id,
       imgPaths,
@@ -37,10 +38,12 @@ const createShadedRelief = async ({
       size,
     });
     await blender.renderShadedRelief({
+      destination: `/tmp/${id}-#.tif`,
       id,
       onProgress: progress => progressById.set(id, progress),
       scale: 2.0,
       size,
+      source: `/tmp/${id}-heightmap.tif`,
     });
     statusById.set(id, { status: 'fulfilled' });
   } catch (error) {

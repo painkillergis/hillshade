@@ -1,13 +1,14 @@
 const spawn = require('child_process').spawn;
 
 const renderShadedRelief = ({
-  id,
+  destination,
   onProgress,
   scale,
   size: {
     width,
     height,
   },
+  source,
 }) => {
   const child = spawn(
     'blender',
@@ -15,10 +16,10 @@ const renderShadedRelief = ({
       '-b',
       '-P', 'src/app/blender.py',
       '-noaudio',
-      '-o', `///tmp/${id}-#.tif`,
+      '-o', `//${destination}`,
       '-f', '0',
       '--',
-      `/tmp/${id}-heightmap.tif`,
+      source,
       width,
       height,
       scale,

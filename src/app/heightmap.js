@@ -15,11 +15,12 @@ const childToPromise = child => new Promise((resolve, reject) => {
 
 const generate = async ({
   cutline,
+  destination,
   extent,
   id,
   imgPaths,
   margin,
-  size
+  size,
 }) => {
   await exec([
     'gdalbuildvrt',
@@ -37,7 +38,7 @@ const generate = async ({
       extent,
       inRaster: `/tmp/${id}-elevation.vrt`,
       margin,
-      outRaster: `/tmp/${id}-heightmap.tif`,
+      outRaster: destination,
       size,
     }),
   );
