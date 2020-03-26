@@ -1,7 +1,8 @@
 const blender = require('./blender');
-const upperLefts = require('./upperLefts');
+const geoTransform = require('./geoTransform');
 const heightmap = require('./heightmap');
 const img = require('./img');
+const upperLefts = require('./upperLefts');
 
 const promisify = require('util').promisify;
 const fs = require('fs');
@@ -46,6 +47,10 @@ const createShadedRelief = async ({
       size,
       source: `/tmp/${id}-heightmap.tif`,
     });
+    await geoTransform.copy(
+      `/tmp/${id}-heightmap.tif`,
+      `/tmp/${id}-0.tif`,
+    );
     statusById.set(id, { status: 'fulfilled' });
   } catch (error) {
     statusById.set(id, { status: 'error', error: error.message });
