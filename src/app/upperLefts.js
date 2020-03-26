@@ -100,7 +100,7 @@ const fromExtent = ({ left, top, right, bottom }) => {
 const fromFeatureCollection = async featureCollection => {
   const { stdout } = spawnSync(
     'python',
-    ['src/app/geojsonToUpperLefts.py'],
+    ['src/app/upperLefts_fromFeatureCollection.py'],
     {
       input: JSON.stringify(featureCollection),
       encoding: 'utf8'
