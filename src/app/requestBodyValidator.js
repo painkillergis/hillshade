@@ -1,4 +1,3 @@
-const service = require('./service');
 const requestBodyValidations = require('./requestBodyValidations');
 
 typeof describe === 'undefined' || describe('requestBodyValidator', function () {
