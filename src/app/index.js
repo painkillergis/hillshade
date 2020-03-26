@@ -83,42 +83,16 @@ typeof describe === 'undefined' || describe('app', function () {
     });
   });
   describe('PUT /:id', function () {
-    it('should render with extent and size', async function () {
-      const extent = { could: 'be any extent' };
-      const size = { could: 'be any size' };
+    it('should render', async function () {
+      const body = { could: 'be anything' };
 
       const response = await chai.request(app)
         .put('/the_id')
         .set('content-type', 'application/json')
-        .send({ extent, size });
+        .send(body);
 
       response.should.have.status(204);
-      service.createShadedRelief.should.have.been.calledWith({ extent, size, id: 'the_id' });
-    });
-    it('should render with cutline and size', async function () {
-      const cutline = { could: 'be any cutline' };
-      const size = { could: 'be any size' };
-
-      const response = await chai.request(app)
-        .put('/the_id')
-        .set('content-type', 'application/json')
-        .send({ cutline, size });
-
-      response.should.have.status(204);
-      service.createShadedRelief.should.have.been.calledWith({ cutline, size, id: 'the_id' });
-    });
-    it('should render with margin', async function () {
-      const cutline = { could: 'be any cutline' };
-      const size = { could: 'be any size' };
-      const margin = 32;
-
-      const response = await chai.request(app)
-        .put('/the_id')
-        .set('content-type', 'application/json')
-        .send({ cutline, margin, size });
-
-      response.should.have.status(204);
-      service.createShadedRelief.should.have.been.calledWith({ cutline, margin, size, id: 'the_id' });
+      service.createShadedRelief.should.have.been.calledWith({ ...body, id: 'the_id' });
     });
     it('should return 400 for validation error', async function () {
       const body = { could: 'be anything' };
