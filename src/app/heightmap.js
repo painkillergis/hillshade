@@ -2,7 +2,6 @@ const cp = require('child_process');
 const promisify = require('util').promisify
 const exec = promisify(cp.exec);
 
-
 const childToPromise = child => new Promise((resolve, reject) => {
   const stdout = [];
   const stderr = []
@@ -21,13 +20,14 @@ const generate = async ({
   imgPaths,
   margin,
   size,
+  source,
 }) => {
   await exec([
     'gdalbuildvrt',
     '-overwrite',
-    `/tmp/${id}-elevation.vrt`,
+    source,
     ...imgPaths,
-  ].join(' '))
+  ].join(' '));
   const child = cp.spawn(
     'python',
     ['src/app/heightmap.py'],

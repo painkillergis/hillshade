@@ -36,6 +36,7 @@ const createShadedRelief = async ({
       imgPaths,
       margin,
       size,
+      source: `/tmp/${id}-elevation.vrt`,
     });
     await blender.renderShadedRelief({
       destination: `/tmp/${id}-#.tif`,
