@@ -17,7 +17,7 @@ const createShadedRelief = async ({
   id,
   cutline,
   extent,
-  margin,
+  margin = 0,
   size,
 }) => {
   try {
@@ -44,7 +44,10 @@ const createShadedRelief = async ({
       id,
       onProgress: progress => progressById.set(id, progress),
       scale: 2.0,
-      size,
+      size: {
+        width: size.width + margin * 2,
+        height: size.height + margin * 2,
+      },
       source: `/tmp/${id}-heightmap.tif`,
     });
     await geoTransform.copy(
