@@ -1,5 +1,5 @@
 const service = require('./service');
-const validation = require('./validation');
+const requestBodyValidations = require('./requestBodyValidations');
 
 typeof describe === 'undefined' || describe('app', function () {
   const chai = require('chai');
@@ -12,10 +12,10 @@ typeof describe === 'undefined' || describe('app', function () {
   beforeEach(function () {
     sandbox = sinon.createSandbox();
     sandbox.stub(service, 'createShadedRelief');
-    sandbox.stub(validation, 'isMarginMalformed');
-    sandbox.stub(validation, 'isCutlineMalformed');
-    sandbox.stub(validation, 'isExtentMalformed');
-    sandbox.stub(validation, 'isSizeMalformed');
+    sandbox.stub(requestBodyValidations, 'isMarginMalformed');
+    sandbox.stub(requestBodyValidations, 'isCutlineMalformed');
+    sandbox.stub(requestBodyValidations, 'isExtentMalformed');
+    sandbox.stub(requestBodyValidations, 'isSizeMalformed');
   });
   describe('GET /:id', function () {
     beforeEach(function () {
@@ -89,9 +89,9 @@ typeof describe === 'undefined' || describe('app', function () {
     it('should render with extent and size', async function () {
       const extent = { could: 'be any extent' };
       const size = { could: 'be any size' };
-      validation.isExtentMalformed.withArgs(extent).resolves(false);
-      validation.isSizeMalformed.withArgs(size).resolves(false);
-      validation.isMarginMalformed.resolves(true);
+      requestBodyValidations.isExtentMalformed.withArgs(extent).resolves(false);
+      requestBodyValidations.isSizeMalformed.withArgs(size).resolves(false);
+      requestBodyValidations.isMarginMalformed.resolves(true);
 
       const response = await chai.request(app)
         .put('/the_id')
@@ -104,8 +104,8 @@ typeof describe === 'undefined' || describe('app', function () {
     it('should render with cutline and size', async function () {
       const cutline = { could: 'be any cutline' };
       const size = { could: 'be any size' };
-      validation.isCutlineMalformed.withArgs(cutline).resolves(false);
-      validation.isSizeMalformed.withArgs(size).resolves(false);
+      requestBodyValidations.isCutlineMalformed.withArgs(cutline).resolves(false);
+      requestBodyValidations.isSizeMalformed.withArgs(size).resolves(false);
 
       const response = await chai.request(app)
         .put('/the_id')
@@ -131,7 +131,7 @@ typeof describe === 'undefined' || describe('app', function () {
     it('should return 400 for malformed cutline', async function () {
       const cutline = { could: 'be any cutline' };
       const size = { could: 'be any size' };
-      validation.isCutlineMalformed.withArgs(cutline).resolves(true);
+      requestBodyValidations.isCutlineMalformed.withArgs(cutline).resolves(true);
 
       const response = await chai.request(app)
         .put('/the_id')
@@ -159,7 +159,7 @@ typeof describe === 'undefined' || describe('app', function () {
     it('should return 400 for malformed extent', async function () {
       const extent = { could: 'be any extent' };
       const size = { could: 'be any size' };
-      validation.isExtentMalformed.withArgs(extent).resolves(true);
+      requestBodyValidations.isExtentMalformed.withArgs(extent).resolves(true);
 
       const response = await chai.request(app)
         .put('/the_id')
@@ -175,7 +175,7 @@ typeof describe === 'undefined' || describe('app', function () {
       const cutline = { could: 'be any cutline' };
       const size = { could: 'be any size' };
       const margin = 'bad bad margin';
-      validation.isMarginMalformed.withArgs(margin).resolves(true);
+      requestBodyValidations.isMarginMalformed.withArgs(margin).resolves(true);
 
       const response = await chai.request(app)
         .put('/the_id')
@@ -203,7 +203,7 @@ typeof describe === 'undefined' || describe('app', function () {
     it('should return 400 for malformed size', async function () {
       const extent = { could: 'be any extent' };
       const size = { could: 'be any size' };
-      validation.isSizeMalformed.withArgs(size).resolves(true);
+      requestBodyValidations.isSizeMalformed.withArgs(size).resolves(true);
 
       const response = await chai.request(app)
         .put('/the_id')
@@ -255,19 +255,19 @@ app.put('/:id', async (request, response) => {
   if (cutline == null && extent == null) {
     response.status(400)
       .json({ message: 'cutline or extent is missing' });
-  } else if (cutline && await validation.isCutlineMalformed(cutline)) {
+  } else if (cutline && await requestBodyValidations.isCutlineMalformed(cutline)) {
     response.status(400)
       .json({ message: 'cutline is malformed' });
-  } else if (extent && await validation.isExtentMalformed(extent)) {
+  } else if (extent && await requestBodyValidations.isExtentMalformed(extent)) {
     response.status(400)
       .json({ message: 'extent is malformed' });
   } else if (size == null) {
     response.status(400)
       .json({ message: 'size is missing' });
-  } else if (await validation.isSizeMalformed(size)) {
+  } else if (await requestBodyValidations.isSizeMalformed(size)) {
     response.status(400)
       .json({ message: 'size is malformed' });
-  } else if (margin != null && await validation.isMarginMalformed(margin)) {
+  } else if (margin != null && await requestBodyValidations.isMarginMalformed(margin)) {
     response.status(400)
       .json({ message: 'margin is malformed' });
   } else {
