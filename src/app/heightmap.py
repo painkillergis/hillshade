@@ -6,9 +6,11 @@ import json, sys
 args = json.load(sys.stdin)
 
 if 'margin' in args:
-  margin = args['margin']
+  marginVertical = args['margin']['vertical'] if 'vertical' in args['margin'] else 0
+  marginHorizontal = args['margin']['horizontal'] if 'horizontal' in args['margin'] else 0
 else:
-  margin = 0
+  marginVertical = 0
+  marginHorizontal = 0
 
 warpPath = f'/vsimem/{uuid4()}.tif'
 paddedWarpPath = f'/vsimem/{uuid4()}.tif'
@@ -50,18 +52,23 @@ warpBand = warpDataSource.GetRasterBand(1)
 warpBand.ComputeStatistics(0) # because USGS lies
 srcMin, srcMax = warpBand.GetMinimum(), warpBand.GetMaximum()
 
-if margin:
-  def padGeoTransform(geoTransform, margin):
+if marginHorizontal or marginVertical:
+  def padGeoTransform(geoTransform, marginHorizontal, marginVertical):
     left, widthResolution, i0, top, i1, heightResolution = geoTransform
     return (
-      left - widthResolution * margin,
+      left - widthResolution * marginHorizontal,
       widthResolution,
       i0,
-      top - heightResolution * margin,
+      top - heightResolution * marginVertical,
       i1,
       heightResolution,
     )
-  paddedArray = np.pad(warpDataSource.ReadAsArray(), margin, mode='constant', constant_values=0)
+  paddedArray = np.pad(
+    warpDataSource.ReadAsArray(),
+    [(marginVertical,), (marginHorizontal,)],
+    mode='constant',
+    constant_values=0,
+  )
   height, width = np.shape(paddedArray)
   paddedWarpDataSource = gdal.GetDriverByName('GTiff').Create(
     paddedWarpPath,
@@ -72,7 +79,7 @@ if margin:
   )
   paddedWarpDataSource.GetRasterBand(1).WriteArray(paddedArray)
   paddedWarpDataSource.GetRasterBand(1).SetNoDataValue(warpDataSource.GetRasterBand(1).GetNoDataValue())
-  paddedWarpDataSource.SetGeoTransform(padGeoTransform(warpDataSource.GetGeoTransform(), margin))
+  paddedWarpDataSource.SetGeoTransform(padGeoTransform(warpDataSource.GetGeoTransform(), marginHorizontal, marginVertical))
   paddedWarpDataSource.SetProjection(warpDataSource.GetProjection())
   warpDataSource = None
   gdal.Unlink(warpPath)
