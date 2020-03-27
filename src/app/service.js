@@ -3,6 +3,7 @@ const geoTransform = require('./geoTransform');
 const heightmap = require('./heightmap');
 const img = require('./img');
 const upperLefts = require('./upperLefts');
+const virtualDataset = require('./virtualDataset');
 
 const promisify = require('util').promisify;
 const fs = require('fs');
@@ -24,17 +25,18 @@ const createShadedRelief = async ({
     metadataById.set(id, { cutline, extent, size });
     statusById.set(id, { status: 'processing' });
     progressById.set(id, 0);
-    const imgPaths = img.pathsFromUpperLefts(
-      cutline
-        ? await upperLefts.fromFeatureCollection(cutline)
-        : upperLefts.fromExtent(extent)
-    );
+    await virtualDataset.build({
+      destination: `/tmp/${id}-elevation.vrt`,
+      imgPaths: img.pathsFromUpperLefts(
+        cutline
+          ? await upperLefts.fromFeatureCollection(cutline)
+          : upperLefts.fromExtent(extent)
+      ),
+    });
     await heightmap.generate({
       cutline,
       destination: `/tmp/${id}-heightmap.tif`,
       extent,
-      id,
-      imgPaths,
       margin,
       size,
       source: `/tmp/${id}-elevation.vrt`,

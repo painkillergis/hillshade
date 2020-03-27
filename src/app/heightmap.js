@@ -1,6 +1,4 @@
-const cp = require('child_process');
-const promisify = require('util').promisify
-const exec = promisify(cp.exec);
+const spawn = require('child_process').spawn;
 
 const childToPromise = child => new Promise((resolve, reject) => {
   const stdout = [];
@@ -9,45 +7,35 @@ const childToPromise = child => new Promise((resolve, reject) => {
   child.stdout.on('data', data => stdout.push(data))
   child.stderr.setEncoding('utf8')
   child.stderr.on('data', data => stderr.push(data))
-  child.addListener('exit', code => code === 0 ? resolve({ stderr, stdout }) : reject({ stderr, stdout }));
+  child.addListener(
+    'exit',
+    code => code > 0
+      ? reject(Error(stderr.join('')))
+      : resolve(stdout.join('')),
+  );
 });
 
-const generate = async ({
+const generate = ({
   cutline,
   destination,
   extent,
-  id,
-  imgPaths,
   margin,
   size,
   source,
 }) => {
-  await exec([
-    'gdalbuildvrt',
-    '-overwrite',
-    source,
-    ...imgPaths,
-  ].join(' '));
-  const child = cp.spawn(
-    'python',
-    ['src/app/heightmap.py'],
-  )
+  const child = spawn('python', ['src/app/heightmap.py']);
   child.stdin.write(
     JSON.stringify({
       cutline,
       extent,
-      inRaster: `/tmp/${id}-elevation.vrt`,
+      inRaster: source,
       margin,
       outRaster: destination,
       size,
     }),
   );
   child.stdin.end();
-  try {
-    await childToPromise(child);
-  } catch ({ stdout, stderr }) {
-    throw Error(`Failed to render heightmap for id ${id}\nstdout: ${stdout}\nstderr: ${stderr}`);
-  }
+  return childToPromise(child);
 }
 
 module.exports = { generate };
