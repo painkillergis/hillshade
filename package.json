@@ -22,7 +22,7 @@
     "uuid": "^7.0.2"
   },
   "scripts": {
-    "testAcceptance": "mocha src/index.js",
+    "testAcceptance": "IMG_DIRECTORY=/run/media/arctair/8183d9cd-1723-4774-900f-82ecd862d844/3dep.13.img.d mocha src/index.js",
     "testUnit": "mocha src/app",
     "testUnitForever": "nodemon --exec 'yarn testUnit || exit 1'",
     "installAssets": "sh installAssets.sh",
