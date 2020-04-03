@@ -33,6 +33,7 @@ typeof describe === 'undefined' || describe('service', function () {
           json: {
             cutline: require('../assets/cutline.json'),
             samples: 96,
+            scale: 1.5,
             size: { width: 128, height: 128 },
             margin: {
               vertical: 16,

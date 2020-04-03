@@ -13,6 +13,7 @@ typeof describe === 'undefined' || describe('requestBodyValidator', function () 
     sandbox.stub(requestBodyValidations, 'isCutlineMalformed');
     sandbox.stub(requestBodyValidations, 'isExtentMalformed');
     sandbox.stub(requestBodyValidations, 'isSamplesMalformed');
+    sandbox.stub(requestBodyValidations, 'isScaleMalformed');
     sandbox.stub(requestBodyValidations, 'isSizeMalformed');
   });
   it('should not return message', async function () {
@@ -20,6 +21,7 @@ typeof describe === 'undefined' || describe('requestBodyValidator', function () 
     requestBodyValidations.isMarginMalformed.resolves(true);
     requestBodyValidations.isExtentMalformed.resolves(true);
     requestBodyValidations.isSamplesMalformed.resolves(true);
+    requestBodyValidations.isScaleMalformed.resolves(true);
     requestBodyValidations.isExtentMalformed.resolves(true);
 
     await validate({ cutline, size }).should.eventually.equal(undefined);
@@ -71,12 +73,20 @@ typeof describe === 'undefined' || describe('requestBodyValidator', function () 
 
     await validate({ extent, samples, size }).should.eventually.equal('samples is malformed');
   });
+  it('should return malformed scale message', async function () {
+    const extent = { could: 'be any extent' };
+    const size = { could: 'be any size' };
+    const scale = 12234;
+    requestBodyValidations.isScaleMalformed.withArgs(scale).resolves(true);
+
+    await validate({ extent, scale, size }).should.eventually.equal('scale is malformed');
+  });
   afterEach(function () {
     sandbox.restore();
   });
 });
 
-const validate = async ({ cutline, extent, margin, samples, size }) => {
+const validate = async ({ cutline, extent, margin, samples, scale, size }) => {
   if (cutline == null && extent == null) {
     return 'cutline or extent is missing';
   } else if (cutline && await requestBodyValidations.isCutlineMalformed(cutline)) {
@@ -91,6 +101,8 @@ const validate = async ({ cutline, extent, margin, samples, size }) => {
     return 'margin is malformed';
   } else if (samples != null && await requestBodyValidations.isSamplesMalformed(samples)) {
     return 'samples is malformed';
+  } else if (scale != null && await requestBodyValidations.isScaleMalformed(scale)) {
+    return 'scale is malformed';
   }
 };
 

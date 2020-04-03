@@ -85,6 +85,18 @@ typeof describe === 'undefined' || describe('validation', function () {
       await isSamplesMalformed(2000.5).should.eventually.equal(true);
     })
   });
+  describe('isScaleMalformed', function () {
+    it('should not be malformed', async function () {
+      await isScaleMalformed(10).should.eventually.equal(false);
+      await isScaleMalformed(10.5).should.eventually.equal(false);
+    });
+    it('should be malformed for incorrect data type', async function () {
+      await isScaleMalformed(-20000).should.eventually.equal(true);
+      await isScaleMalformed(-2000.5).should.eventually.equal(true);
+      await isScaleMalformed({}).should.eventually.equal(true);
+      await isScaleMalformed([]).should.eventually.equal(true);
+    })
+  });
   describe('isSizeMalformed', function () {
     it('should be malformed for incorrect data type', async function () {
       await isSizeMalformed([]).should.eventually.equal(true);
@@ -140,6 +152,11 @@ const isSamplesMalformed = samples => Promise.resolve(
   isWholeNumberMalformed(samples)
 );
 
+const isScaleMalformed = scale => Promise.resolve(
+  typeof scale !== 'number'
+  || scale < 0
+);
+
 const isSizeMalformed = size => Promise.resolve(
   isNotObject(size)
   || isWholeNumberMalformed(size.height)
@@ -160,5 +177,6 @@ module.exports = {
   isExtentMalformed,
   isMarginMalformed,
   isSamplesMalformed,
+  isScaleMalformed,
   isSizeMalformed,
 };

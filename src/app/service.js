@@ -20,6 +20,7 @@ const createShadedRelief = async ({
   extent,
   margin = {},
   samples,
+  scale,
   size,
 }) => {
   try {
@@ -47,7 +48,7 @@ const createShadedRelief = async ({
       id,
       onProgress: progress => progressById.set(id, progress),
       samples: samples || 64,
-      scale: 2.0,
+      scale: scale || 2.0,
       size: {
         width: size.width + (margin.horizontal || 0) * 2,
         height: size.height + (margin.vertical || 0) * 2,
