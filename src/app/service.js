@@ -22,6 +22,7 @@ const createShadedRelief = async ({
   samples,
   scale,
   size,
+  srid,
 }) => {
   try {
     metadataById.set(id, { cutline, extent, size });
@@ -42,6 +43,7 @@ const createShadedRelief = async ({
       margin,
       size,
       source: `/tmp/${id}-elevation.vrt`,
+      srid: srid || 'EPSG:4269',
     });
     await blender.renderShadedRelief({
       destination: `/tmp/${id}-#.tif`,

@@ -35,6 +35,7 @@ typeof describe === 'undefined' || describe('service', function () {
             samples: 96,
             scale: 1.5,
             size: { width: 128, height: 128 },
+            srid: 'EPSG:26915',
             margin: {
               vertical: 16,
               horizontal: 8,

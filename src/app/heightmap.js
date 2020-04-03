@@ -22,6 +22,7 @@ const generate = ({
   margin,
   size,
   source,
+  srid,
 }) => {
   const child = spawn('python', ['src/app/heightmap.py']);
   child.stdin.write(
@@ -32,6 +33,7 @@ const generate = ({
       margin,
       outRaster: destination,
       size,
+      srid,
     }),
   );
   child.stdin.end();

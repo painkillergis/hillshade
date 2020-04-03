@@ -23,6 +23,7 @@ if 'cutline' in args:
     warpPath,
     args['inRaster'],
     options = gdal.WarpOptions(
+      dstSRS = args['srid'],
       width = args['size']['width'],
       height = args['size']['height'],
       resampleAlg = 'bilinear',
@@ -36,6 +37,7 @@ else:
     warpPath,
     args['inRaster'],
     options = gdal.WarpOptions(
+      dstSRS = args['srid'],
       outputBounds = [
         args['extent']['left'],
         args['extent']['bottom'],
