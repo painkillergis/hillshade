@@ -19,6 +19,7 @@ const createShadedRelief = async ({
   cutline,
   extent,
   margin = {},
+  samples,
   size,
 }) => {
   try {
@@ -45,6 +46,7 @@ const createShadedRelief = async ({
       destination: `/tmp/${id}-#.tif`,
       id,
       onProgress: progress => progressById.set(id, progress),
+      samples: samples || 64,
       scale: 2.0,
       size: {
         width: size.width + (margin.horizontal || 0) * 2,

@@ -20,6 +20,7 @@ const childToPromise = child => new Promise((resolve, reject) => {
 const renderShadedRelief = ({
   destination,
   onProgress,
+  samples,
   scale,
   size: {
     width,
@@ -40,6 +41,7 @@ const renderShadedRelief = ({
       width,
       height,
       scale,
+      samples,
     ]
   );
   const stderr = [];

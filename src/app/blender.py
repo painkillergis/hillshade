@@ -1,15 +1,15 @@
 import bpy, math, sys
 
-scriptsArgs = sys.argv[sys.argv.index("--") + 1:]
-if len(scriptsArgs) != 4:
-  print('Usage: blender ... -- <heightmap> <width> <height> <scale>')
+args = sys.argv[sys.argv.index("--") + 1:]
+if len(args) != 5:
+  print('Usage: blender ... -- <heightmap> <width> <height> <scale> <samples>')
   raise
-heightmap, width, height, scale = scriptsArgs[0], int(scriptsArgs[1]), int(scriptsArgs[2]), float(scriptsArgs[3])
+heightmap, width, height, scale, samples = args[0], int(args[1]), int(args[2]), float(args[3]), int(args[4])
 
 for scene in bpy.data.scenes:
   scene.render.engine = 'CYCLES'
   scene.cycles.device = 'GPU'
-  scene.cycles.samples = 64
+  scene.cycles.samples = samples
   scene.cycles.feature_set = 'EXPERIMENTAL'
   scene.cycles.use_adaptive_subdivision = True
   scene.cycles.displacement_method = 'TRUE'

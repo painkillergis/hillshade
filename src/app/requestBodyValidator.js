@@ -12,53 +12,71 @@ typeof describe === 'undefined' || describe('requestBodyValidator', function () 
     sandbox.stub(requestBodyValidations, 'isMarginMalformed');
     sandbox.stub(requestBodyValidations, 'isCutlineMalformed');
     sandbox.stub(requestBodyValidations, 'isExtentMalformed');
+    sandbox.stub(requestBodyValidations, 'isSamplesMalformed');
     sandbox.stub(requestBodyValidations, 'isSizeMalformed');
   });
-  it('should message for malformed cutline', async function () {
+  it('should not return message', async function () {
+    const cutline = size = {};
+    requestBodyValidations.isMarginMalformed.resolves(true);
+    requestBodyValidations.isExtentMalformed.resolves(true);
+    requestBodyValidations.isSamplesMalformed.resolves(true);
+    requestBodyValidations.isExtentMalformed.resolves(true);
+
+    await validate({ cutline, size }).should.eventually.equal(undefined);
+  });
+  it('should return malformed cutline message', async function () {
     const cutline = { could: 'be any cutline' };
     const size = { could: 'be any size' };
     requestBodyValidations.isCutlineMalformed.withArgs(cutline).resolves(true);
 
-    validate({ cutline, size }).should.eventually.equal('cutline is malformed');
+    await validate({ cutline, size }).should.eventually.equal('cutline is malformed');
   });
-  it('should return 400 for missing cutline or extent', async function () {
+  it('should return missing cutline or extent message', async function () {
     const size = { could: 'be any size' };
 
-    validate({ size }).should.eventually.equal('cutline or extent is missing');
+    await validate({ size }).should.eventually.equal('cutline or extent is missing');
   });
-  it('should return 400 for malformed extent', async function () {
+  it('should return malformed extent message', async function () {
     const extent = { could: 'be any extent' };
     const size = { could: 'be any size' };
     requestBodyValidations.isExtentMalformed.withArgs(extent).resolves(true);
 
-    validate({ extent, size }).should.eventually.equal('extent is malformed');
+    await validate({ extent, size }).should.eventually.equal('extent is malformed');
   });
-  it('should return 400 for malformed margin', async function () {
+  it('should return malformed margin message', async function () {
     const cutline = { could: 'be any cutline' };
     const size = { could: 'be any size' };
     const margin = 'bad bad margin';
     requestBodyValidations.isMarginMalformed.withArgs(margin).resolves(true);
 
-    validate({ cutline, margin, size }).should.eventually.equal('margin is malformed');
+    await validate({ cutline, margin, size }).should.eventually.equal('margin is malformed');
   })
-  it('should return 400 for missing size', async function () {
+  it('should return missing size message', async function () {
     const extent = { could: 'be any extent' };
 
-    validate({ extent }).should.eventually.equal('size is missing');
+    await validate({ extent }).should.eventually.equal('size is missing');
   });
-  it('should return 400 for malformed size', async function () {
+  it('should return malformed size message', async function () {
     const extent = { could: 'be any extent' };
     const size = { could: 'be any size' };
     requestBodyValidations.isSizeMalformed.withArgs(size).resolves(true);
 
     validate({ extent, size }).should.eventually.equal('size is malformed');
   });
+  it('should return malformed samples message', async function () {
+    const extent = { could: 'be any extent' };
+    const size = { could: 'be any size' };
+    const samples = 69;
+    requestBodyValidations.isSamplesMalformed.withArgs(samples).resolves(true);
+
+    await validate({ extent, samples, size }).should.eventually.equal('samples is malformed');
+  });
   afterEach(function () {
     sandbox.restore();
   });
 });
 
-const validate = async ({ cutline, extent, margin, size }) => {
+const validate = async ({ cutline, extent, margin, samples, size }) => {
   if (cutline == null && extent == null) {
     return 'cutline or extent is missing';
   } else if (cutline && await requestBodyValidations.isCutlineMalformed(cutline)) {
@@ -71,6 +89,8 @@ const validate = async ({ cutline, extent, margin, size }) => {
     return 'size is malformed';
   } else if (margin != null && await requestBodyValidations.isMarginMalformed(margin)) {
     return 'margin is malformed';
+  } else if (samples != null && await requestBodyValidations.isSamplesMalformed(samples)) {
+    return 'samples is malformed';
   }
 };
 
