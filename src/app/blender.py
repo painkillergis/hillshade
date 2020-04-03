@@ -22,6 +22,7 @@ for scene in bpy.data.scenes:
   scene.camera.rotation_euler = (0.0, 0.0, 0.0)
 
 bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'CUDA'
+bpy.context.preferences.addons['cycles'].preferences.get_devices()
 
 bpy.data.cameras['Camera'].type = 'ORTHO'
 bpy.data.cameras['Camera'].ortho_scale = max(width / height, 1) * 2
