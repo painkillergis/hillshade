@@ -19,10 +19,11 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.0",
     "sinon-chai": "^3.5.0",
+    "spawn-app": "http://npm.arctair.com.s3-website-us-east-1.amazonaws.com/spawn-app-1.1.14.tgz",
     "uuid": "^7.0.2"
   },
   "scripts": {
-    "testAcceptance": "IMG_DIRECTORY=/run/media/arctair/8183d9cd-1723-4774-900f-82ecd862d844/3dep.13.img.d mocha src/index.js",
+    "testAcceptance": "IMG_DIRECTORY=/run/media/arctair/8183d9cd-1723-4774-900f-82ecd862d844/3dep.13.img.d mocha test",
     "testUnit": "mocha src/app",
     "testUnitForever": "nodemon --exec 'yarn testUnit || exit 1'",
     "installAssets": "sh installAssets.sh",
