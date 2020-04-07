@@ -15,6 +15,13 @@ const { murder, spawnApp } = require('spawn-app');
 chai.should();
 chai.use(require('chai-as-promised'));
 
+const createRender = ({ id, ...json }) => request({
+  json,
+  method: 'PUT',
+  resolveWithFullResponse: true,
+  uri: `http://localhost:8080/${id}`,
+});
+
 const getTiff = (id, filename) => request({
   encoding: null,
   method: 'GET',
@@ -41,26 +48,22 @@ describe('service', function () {
     await getShadedRelief('non-existent')
       .should.eventually.be.rejectedWith(StatusCodeError)
       .and.have.property('statusCode', 404);
-
   });
   it('should render with cutline and optional parameters', async function () {
     let tmpFile = `/tmp/${uuid4()}`;
-    await request({
-      json: {
-        cutline: require('../assets/cutline.json'),
-        samples: 96,
-        scale: 1.5,
-        size: { width: 128, height: 128 },
-        srid: 'EPSG:26915',
-        margin: {
-          vertical: 16,
-          horizontal: 8,
-        },
+
+    await createRender({
+      cutline: require('../assets/cutline.json'),
+      id: '4321',
+      margin: {
+        vertical: 16,
+        horizontal: 8,
       },
-      method: 'PUT',
-      resolveWithFullResponse: true,
-      uri: `http://localhost:8080/4321`,
-    }).should.eventually.have.property('statusCode', 204);
+      samples: 96,
+      scale: 1.5,
+      size: { width: 128, height: 128 },
+      srid: 'EPSG:26915',
+    });
 
     let body = {};
     while (!body.status || body.status == 'processing') {
@@ -91,15 +94,12 @@ describe('service', function () {
   });
   it('should render with extent across multiple 3dep cells', async function () {
     const tmpFile = `/tmp/${uuid4()}`;
-    await request({
-      json: {
-        size: { width: 384, height: 128 },
-        extent: { left: -107, right: -104.5, top: 38, bottom: 37 },
-      },
-      method: 'PUT',
-      resolveWithFullResponse: true,
-      uri: `http://localhost:8080/two-plus-half`,
-    }).should.eventually.have.property('statusCode', 204);
+
+    await createRender({
+      extent: { left: -107, right: -104.5, top: 38, bottom: 37 },
+      id: 'two-plus-half',
+      size: { width: 384, height: 128 },
+    });
 
     let body = {};
     while (!body.status || body.status == 'processing') {
