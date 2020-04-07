@@ -28,6 +28,18 @@ const getMetadata = id => request({
   uri: `http://localhost:8080/${id}`,
 }).then(response => response.body);
 
+const isRenderProcessing = async id => {
+  const { status } = await getMetadata(id);
+  switch (status) {
+    case 'processing':
+      return true;
+    case 'fulfilled':
+      return false;
+    default:
+      throw Error('Render was not fulfilled\n' + JSON.stringify(metadata))
+  }
+};
+
 const getTiff = (id, filename) => request({
   encoding: null,
   method: 'GET',
@@ -71,13 +83,7 @@ describe('service', function () {
       srid: 'EPSG:26915',
     });
 
-    let metadata = {};
-    while (!metadata.status || metadata.status == 'processing') {
-      metadata = await getMetadata('4321');
-    }
-    if (metadata.status !== 'fulfilled') {
-      throw Error('Render was not fulfilled\n' + JSON.stringify(metadata))
-    }
+    while (await isRenderProcessing('4321')) { }
 
     const heightmap = await getHeightmap('4321');
     const shadedRelief = await getShadedRelief('4321');
@@ -100,13 +106,7 @@ describe('service', function () {
       size: { width: 384, height: 128 },
     });
 
-    let metadata = {};
-    while (!metadata.status || metadata.status == 'processing') {
-      metadata = await getMetadata('two-plus-half');
-    }
-    if (metadata.status !== 'fulfilled') {
-      throw Error('Render was not fulfilled\n' + JSON.stringify(metadata))
-    }
+    while (await isRenderProcessing('two-plus-half')) { }
 
     const heightmap = await getHeightmap('two-plus-half');
     const shadedRelief = await getShadedRelief('two-plus-half');
