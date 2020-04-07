@@ -22,6 +22,12 @@ const createRender = ({ id, ...json }) => request({
   uri: `http://localhost:8080/${id}`,
 });
 
+const getMetadata = id => request({
+  json: true,
+  resolveWithFullResponse: true,
+  uri: `http://localhost:8080/${id}`,
+}).then(response => response.body);
+
 const getTiff = (id, filename) => request({
   encoding: null,
   method: 'GET',
@@ -65,19 +71,12 @@ describe('service', function () {
       srid: 'EPSG:26915',
     });
 
-    let body = {};
-    while (!body.status || body.status == 'processing') {
-      const response = await request({
-        json: true,
-        resolveWithFullResponse: true,
-        simple: false,
-        uri: 'http://localhost:8080/4321',
-      });
-      response.statusCode.should.equal(200);
-      body = response.body;
+    let metadata = {};
+    while (!metadata.status || metadata.status == 'processing') {
+      metadata = await getMetadata('4321');
     }
-    if (body.status !== 'fulfilled') {
-      throw Error('Render was not fulfilled\n' + JSON.stringify(body))
+    if (metadata.status !== 'fulfilled') {
+      throw Error('Render was not fulfilled\n' + JSON.stringify(metadata))
     }
 
     const heightmap = await getHeightmap('4321');
@@ -101,19 +100,12 @@ describe('service', function () {
       size: { width: 384, height: 128 },
     });
 
-    let body = {};
-    while (!body.status || body.status == 'processing') {
-      const response = await request({
-        json: true,
-        resolveWithFullResponse: true,
-        simple: false,
-        uri: 'http://localhost:8080/two-plus-half',
-      });
-      response.statusCode.should.equal(200);
-      body = response.body;
+    let metadata = {};
+    while (!metadata.status || metadata.status == 'processing') {
+      metadata = await getMetadata('two-plus-half');
     }
-    if (body.status !== 'fulfilled') {
-      throw Error('Render was not fulfilled\n' + JSON.stringify(body))
+    if (metadata.status !== 'fulfilled') {
+      throw Error('Render was not fulfilled\n' + JSON.stringify(metadata))
     }
 
     const heightmap = await getHeightmap('two-plus-half');
