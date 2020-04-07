@@ -62,14 +62,16 @@ describe('service', function () {
       path: './src/index.js',
     });
   });
+  let tmpFile;
+  beforeEach(async function () {
+    tmpFile = `/tmp/${uuid4()}`;
+  });
   it('should 404 when getting non-existent image', async function () {
     await getShadedRelief('non-existent')
       .should.eventually.be.rejectedWith(StatusCodeError)
       .and.have.property('statusCode', 404);
   });
   it('should render with cutline and optional parameters', async function () {
-    let tmpFile = `/tmp/${uuid4()}`;
-
     await createRender({
       cutline: require('../assets/cutline.json'),
       id: '4321',
@@ -94,12 +96,8 @@ describe('service', function () {
     await writeFile(tmpFile, shadedRelief);
     (await exec(`gdalcompare.py assets/4321-shaded-relief.tif ${tmpFile} || exit 0`))
       .stdout.should.equal('Differences Found: 0\n');
-
-    if (existsSync(tmpFile)) await unlink(tmpFile);
   });
   it('should render with extent across multiple 3dep cells', async function () {
-    const tmpFile = `/tmp/${uuid4()}`;
-
     await createRender({
       extent: { left: -107, right: -104.5, top: 38, bottom: 37 },
       id: 'two-plus-half',
@@ -117,7 +115,8 @@ describe('service', function () {
     await writeFile(tmpFile, shadedRelief);
     (await exec(`gdalcompare.py assets/two-plus-half-shaded-relief.tif ${tmpFile} || exit 0`))
       .stdout.should.equal('Differences Found: 0\n');
-
+  });
+  afterEach(async function () {
     if (existsSync(tmpFile)) await unlink(tmpFile);
   });
   after(async function () {
