@@ -1,10 +1,12 @@
 const promisify = require('util').promisify;
 const fs = require('fs');
 
+const assert = require('assert');
 const chai = require('chai');
 const exec = promisify(require('child_process').exec);
 const existsSync = fs.existsSync;
 const request = require('request-promise');
+const StatusCodeError = require('request-promise/errors').StatusCodeError;
 const unlink = promisify(fs.unlink);
 const uuid4 = require('uuid').v4;
 const writeFile = promisify(fs.writeFile);
@@ -12,6 +14,19 @@ const { murder, spawnApp } = require('spawn-app');
 
 chai.should();
 chai.use(require('chai-as-promised'));
+
+const getTiff = (id, filename) => request({
+  encoding: null,
+  method: 'GET',
+  resolveWithFullResponse: true,
+  uri: `http://localhost:8080/${id}/${filename}.tif`,
+}).then(response => {
+  assert.deepEqual(response.headers['content-type'], 'image/tiff');
+  return response.body;
+});
+
+const getHeightmap = id => getTiff(id, 'heightmap');
+const getShadedRelief = id => getTiff(id, 'shaded-relief');
 
 describe('service', function () {
   this.timeout(0)
@@ -23,14 +38,10 @@ describe('service', function () {
     });
   });
   it('should 404 when getting non-existent image', async function () {
-    const response = await request({
-      method: 'GET',
-      resolveWithFullResponse: true,
-      simple: false,
-      uri: 'http://localhost:8080/non-existent/shaded-relief.tif',
-    });
+    await getShadedRelief('non-existent')
+      .should.eventually.be.rejectedWith(StatusCodeError)
+      .and.have.property('statusCode', 404);
 
-    response.statusCode.should.equal(404);
   });
   it('should render with cutline and optional parameters', async function () {
     let tmpFile = `/tmp/${uuid4()}`;
@@ -66,22 +77,8 @@ describe('service', function () {
       throw Error('Render was not fulfilled\n' + JSON.stringify(body))
     }
 
-    const [heightmap, shadedRelief] = await Promise.all(
-      [
-        '/4321/heightmap.tif',
-        '/4321/shaded-relief.tif',
-      ].map(
-        path => request({
-          encoding: null,
-          method: 'GET',
-          resolveWithFullResponse: true,
-          uri: `http://localhost:8080${path}`,
-        })
-      )
-    ).then(responses => {
-      responses.forEach(response => response.headers['content-type'].should.contain('image/tiff'));
-      return responses.map(response => response.body);
-    });
+    const heightmap = await getHeightmap('4321');
+    const shadedRelief = await getShadedRelief('4321');
 
     await writeFile(tmpFile, heightmap);
     (await exec(`gdalcompare.py assets/4321-heightmap.tif ${tmpFile} || exit 0`))
@@ -119,22 +116,8 @@ describe('service', function () {
       throw Error('Render was not fulfilled\n' + JSON.stringify(body))
     }
 
-    const [heightmap, shadedRelief] = await Promise.all(
-      [
-        '/two-plus-half/heightmap.tif',
-        '/two-plus-half/shaded-relief.tif',
-      ].map(
-        path => request({
-          encoding: null,
-          method: 'GET',
-          resolveWithFullResponse: true,
-          uri: `http://localhost:8080${path}`,
-        })
-      )
-    ).then(responses => {
-      responses.forEach(response => response.headers['content-type'].should.contain('image/tiff'));
-      return responses.map(response => response.body);
-    });
+    const heightmap = await getHeightmap('two-plus-half');
+    const shadedRelief = await getShadedRelief('two-plus-half');
 
     await writeFile(tmpFile, heightmap);
     (await exec(`gdalcompare.py assets/two-plus-half-heightmap.tif ${tmpFile} || exit 0`))
