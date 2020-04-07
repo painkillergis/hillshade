@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const assert = require('assert');
 const chai = require('chai');
-const exec = promisify(require('child_process').exec);
+const exec = require('child_process').exec;
 const existsSync = fs.existsSync;
 const request = require('request-promise');
 const StatusCodeError = require('request-promise/errors').StatusCodeError;
@@ -53,6 +53,17 @@ const getTiff = (id, filename) => request({
 const getHeightmap = id => getTiff(id, 'heightmap');
 const getShadedRelief = id => getTiff(id, 'shaded-relief');
 
+const compareSpatialReferenceSystems = (expected, file) => new Promise(
+  (resolve, reject) => exec(
+    `diff ${expected} <(gdalsrsinfo ${file})`,
+    { shell: 'bash' },
+    (error, stdout) => {
+      if (error) reject(Error('SRS mismatch:\n' + stdout));
+      else resolve();
+    }
+  )
+);
+
 describe('service', function () {
   this.timeout(0)
   let processUnderTest;
@@ -91,11 +102,11 @@ describe('service', function () {
     const shadedRelief = await getShadedRelief('4321');
 
     await writeFile(tmpFile, heightmap);
-    (await exec(`gdalcompare.py assets/4321-heightmap.tif ${tmpFile} || exit 0`))
-      .stdout.should.equal('Differences Found: 0\n');
+    await compareSpatialReferenceSystems('assets/4321.srs', tmpFile);
+    // TODO assert size
     await writeFile(tmpFile, shadedRelief);
-    (await exec(`gdalcompare.py assets/4321-shaded-relief.tif ${tmpFile} || exit 0`))
-      .stdout.should.equal('Differences Found: 0\n');
+    await compareSpatialReferenceSystems('assets/4321.srs', tmpFile);
+    // TODO assert size
   });
   it('should render with extent across multiple 3dep cells', async function () {
     await createRender({
@@ -110,11 +121,11 @@ describe('service', function () {
     const shadedRelief = await getShadedRelief('two-plus-half');
 
     await writeFile(tmpFile, heightmap);
-    (await exec(`gdalcompare.py assets/two-plus-half-heightmap.tif ${tmpFile} || exit 0`))
-      .stdout.should.equal('Differences Found: 0\n');
+    await compareSpatialReferenceSystems('assets/two-plus-half.srs', tmpFile);
+    // TODO assert size
     await writeFile(tmpFile, shadedRelief);
-    (await exec(`gdalcompare.py assets/two-plus-half-shaded-relief.tif ${tmpFile} || exit 0`))
-      .stdout.should.equal('Differences Found: 0\n');
+    await compareSpatialReferenceSystems('assets/two-plus-half.srs', tmpFile);
+    // TODO assert size
   });
   afterEach(async function () {
     if (existsSync(tmpFile)) await unlink(tmpFile);
