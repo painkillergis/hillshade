@@ -64,6 +64,31 @@ const compareSpatialReferenceSystems = (expected, file) => new Promise(
   )
 );
 
+const assertImageSize = (expectedWidth, expectedHeight, file) => new Promise(
+  (resolve, reject) => exec(
+    `exiv2 ${file}`,
+    (error, stdout, stderr) => {
+      if (error) reject(Error('Failed to get image metadata:\n' + stderr));
+      else {
+        const [width, height] = stdout.split('\n')
+          .filter(line => line.indexOf('Image size') > -1)
+          .join()
+          .split(':')[1]
+          .trim()
+          .split(' x ')
+          .map(s => parseInt(s));
+        try {
+          assert.equal(expectedWidth, width, `width ${width} does not match expected ${expectedWidth}`);
+          assert.equal(expectedHeight, height, `height ${height} does not match expected ${expectedHeight}`);
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      }
+    }
+  )
+)
+
 describe('service', function () {
   this.timeout(0)
   let processUnderTest;
@@ -103,10 +128,10 @@ describe('service', function () {
 
     await writeFile(tmpFile, heightmap);
     await compareSpatialReferenceSystems('assets/4321.srs', tmpFile);
-    // TODO assert size
+    await assertImageSize(144, 160, tmpFile);
     await writeFile(tmpFile, shadedRelief);
     await compareSpatialReferenceSystems('assets/4321.srs', tmpFile);
-    // TODO assert size
+    await assertImageSize(144, 160, tmpFile);
   });
   it('should render with extent across multiple 3dep cells', async function () {
     await createRender({
@@ -122,10 +147,10 @@ describe('service', function () {
 
     await writeFile(tmpFile, heightmap);
     await compareSpatialReferenceSystems('assets/two-plus-half.srs', tmpFile);
-    // TODO assert size
+    await assertImageSize(384, 128, tmpFile);
     await writeFile(tmpFile, shadedRelief);
     await compareSpatialReferenceSystems('assets/two-plus-half.srs', tmpFile);
-    // TODO assert size
+    await assertImageSize(384, 128, tmpFile);
   });
   afterEach(async function () {
     if (existsSync(tmpFile)) await unlink(tmpFile);
