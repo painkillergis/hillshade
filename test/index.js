@@ -53,41 +53,16 @@ const getTiff = (id, filename) => request({
 const getHeightmap = id => getTiff(id, 'heightmap');
 const getShadedRelief = id => getTiff(id, 'shaded-relief');
 
-const compareSpatialReferenceSystems = (expected, file) => new Promise(
+const assertGdalInfo = (expected, file) => new Promise(
   (resolve, reject) => exec(
-    `diff ${expected} <(gdalsrsinfo ${file})`,
+    `diff <(grep -v 'Files:' ${expected}) <(gdalinfo ${file} | grep -v 'Files:')`,
     { shell: 'bash' },
     (error, stdout) => {
-      if (error) reject(Error('SRS mismatch:\n' + stdout));
+      if (error) reject(Error('gdalinfo mismatch:\n' + stdout));
       else resolve();
     }
   )
 );
-
-const assertImageSize = (expectedWidth, expectedHeight, file) => new Promise(
-  (resolve, reject) => exec(
-    `exiv2 ${file}`,
-    (error, stdout, stderr) => {
-      if (error) reject(Error('Failed to get image metadata:\n' + stderr));
-      else {
-        const [width, height] = stdout.split('\n')
-          .filter(line => line.indexOf('Image size') > -1)
-          .join()
-          .split(':')[1]
-          .trim()
-          .split(' x ')
-          .map(s => parseInt(s));
-        try {
-          assert.equal(expectedWidth, width, `width ${width} does not match expected ${expectedWidth}`);
-          assert.equal(expectedHeight, height, `height ${height} does not match expected ${expectedHeight}`);
-          resolve();
-        } catch (error) {
-          reject(error);
-        }
-      }
-    }
-  )
-)
 
 describe('service', function () {
   this.timeout(0)
@@ -127,30 +102,26 @@ describe('service', function () {
     const shadedRelief = await getShadedRelief('4321');
 
     await writeFile(tmpFile, heightmap);
-    await compareSpatialReferenceSystems('assets/4321.srs', tmpFile);
-    await assertImageSize(144, 160, tmpFile);
+    await assertGdalInfo('assets/4321-heightmap.gdalinfo', tmpFile);
     await writeFile(tmpFile, shadedRelief);
-    await compareSpatialReferenceSystems('assets/4321.srs', tmpFile);
-    await assertImageSize(144, 160, tmpFile);
+    await assertGdalInfo('assets/4321-shaded-relief.gdalinfo', tmpFile);
   });
   it('should render with extent across multiple 3dep cells', async function () {
     await createRender({
-      extent: { left: -107, right: -104.5, top: 38, bottom: 37 },
-      id: 'two-plus-half',
-      size: { width: 384, height: 128 },
+      extent: { left: -107.125, right: -106.875, top: 38.125, bottom: 37.875 },
+      id: 'kitty-corner',
+      size: { width: 64, height: 64 },
     });
 
-    while (await isRenderProcessing('two-plus-half')) { }
+    while (await isRenderProcessing('kitty-corner')) { }
 
-    const heightmap = await getHeightmap('two-plus-half');
-    const shadedRelief = await getShadedRelief('two-plus-half');
+    const heightmap = await getHeightmap('kitty-corner');
+    const shadedRelief = await getShadedRelief('kitty-corner');
 
     await writeFile(tmpFile, heightmap);
-    await compareSpatialReferenceSystems('assets/two-plus-half.srs', tmpFile);
-    await assertImageSize(384, 128, tmpFile);
+    await assertGdalInfo('assets/kitty-corner-heightmap.gdalinfo', tmpFile);
     await writeFile(tmpFile, shadedRelief);
-    await compareSpatialReferenceSystems('assets/two-plus-half.srs', tmpFile);
-    await assertImageSize(384, 128, tmpFile);
+    await assertGdalInfo('assets/kitty-corner-shaded-relief.gdalinfo', tmpFile);
   });
   afterEach(async function () {
     if (existsSync(tmpFile)) await unlink(tmpFile);
