@@ -8,6 +8,7 @@ heightmap, width, height, scale, samples = args[0], int(args[1]), int(args[2]), 
 
 for scene in bpy.data.scenes:
   scene.render.engine = 'CYCLES'
+  scene.cycles.device = 'GPU'
   scene.cycles.samples = samples
   scene.cycles.feature_set = 'EXPERIMENTAL'
   scene.cycles.use_adaptive_subdivision = True
@@ -19,6 +20,9 @@ for scene in bpy.data.scenes:
   scene.render.image_settings.color_depth = '8'
   scene.camera.location = (0.0, 0.0, 100.0)
   scene.camera.rotation_euler = (0.0, 0.0, 0.0)
+
+bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'CUDA'
+bpy.context.preferences.addons['cycles'].preferences.get_devices()
 
 bpy.data.cameras['Camera'].type = 'ORTHO'
 bpy.data.cameras['Camera'].ortho_scale = max(width / height, 1) * 2
