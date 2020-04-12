@@ -9,6 +9,7 @@ const which = name => new Promise(
 Promise.all([
   which('blender'),
   which('gdalbuildvrt'),
+  which('python'),
 ])
   .then(() => require('./app').listen(8080, () => console.log('0.0.0.0:8080')))
   .catch(error => console.error(error))
