@@ -1,4 +1,5 @@
 FROM node:13-alpine
+RUN apk add gdal
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN yarn
