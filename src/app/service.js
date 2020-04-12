@@ -63,6 +63,7 @@ const createShadedRelief = async ({
     );
     statusById.set(id, { status: 'fulfilled' });
   } catch (error) {
+    console.error(`Error fulfilling ${id}`, error);
     statusById.set(id, { status: 'error', error: error.message });
   }
 };

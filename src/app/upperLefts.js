@@ -85,7 +85,7 @@ typeof describe === 'undefined' || describe('bounds', function () {
   });
 });
 
-const spawnSync = require('child_process').spawnSync;
+const spawn = require('child_process').spawn;
 
 const fromExtent = ({ left, top, right, bottom }) => {
   const upperLefts = [];
@@ -97,17 +97,26 @@ const fromExtent = ({ left, top, right, bottom }) => {
   return upperLefts;
 };
 
-const fromFeatureCollection = async featureCollection => {
-  const { stdout } = spawnSync(
-    'python',
-    ['src/app/upperLefts_fromFeatureCollection.py'],
-    {
-      input: JSON.stringify(featureCollection),
-      encoding: 'utf8'
-    },
-  );
-  return JSON.parse(stdout);
-}
+const fromFeatureCollection = featureCollection => new Promise(
+  (resolve, reject) => {
+    let stdout = '';
+    let stderr = '';
+    const child = spawn(
+      'python',
+      ['src/app/upperLefts_fromFeatureCollection.py'],
+    );
+    child.stdout.on('data', data => stdout += data);
+    child.stderr.on('data', data => stderr += data);
+    child.stdin.write(JSON.stringify(featureCollection))
+    child.stdin.end();
+    child.on(
+      'exit',
+      code => code
+        ? reject(Error(stderr))
+        : resolve(JSON.parse(stdout))
+    )
+  }
+);
 
 module.exports = {
   fromExtent,

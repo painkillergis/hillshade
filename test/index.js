@@ -29,14 +29,14 @@ const getMetadata = id => request({
 }).then(response => response.body);
 
 const isRenderProcessing = async id => {
-  const { status } = await getMetadata(id);
+  const { status, error } = await getMetadata(id);
   switch (status) {
     case 'processing':
       return true;
     case 'fulfilled':
       return false;
     default:
-      throw Error('Render was not fulfilled\n' + JSON.stringify(metadata))
+      throw Error('Render was not fulfilled\nServer error: ' + error);
   }
 };
 
@@ -72,6 +72,8 @@ describe('service', function () {
       timeoutMs: 4000,
       path: './src/index.js',
     });
+    processUnderTest.stdout.on('data', data => console.log('ProcessUnderTest>', data))
+    processUnderTest.stderr.on('data', data => console.error('ProcessUnderTest>', data))
   });
   let tmpFile;
   beforeEach(async function () {
