@@ -125,6 +125,22 @@ describe('service', function () {
     await writeFile(tmpFile, shadedRelief);
     await assertGdalInfo('assets/kitty-corner-shaded-relief.gdalinfo', tmpFile);
   });
+  it('should return timings', async function () {
+    await createRender({
+      extent: { left: -107.125, right: -107, top: 37.125, bottom: 37 },
+      id: 'mini-corner',
+      size: { width: 64, height: 64 },
+    });
+
+    while (await isRenderProcessing('mini-corner')) { }
+
+    const { timings } = getMetadata('mini-corner');
+    timings.start < new Date();
+    timings.virtualDatasetDuration.should.be.a.number();
+    timings.heightmapDuration.should.be.a.number();
+    timings.blenderDuration.should.be.a.number();
+    timings.geoTransformDuration.should.be.a.number();
+  });
   afterEach(async function () {
     if (existsSync(tmpFile)) await unlink(tmpFile);
   });
