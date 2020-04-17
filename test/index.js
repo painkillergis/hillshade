@@ -134,12 +134,12 @@ describe('service', function () {
 
     while (await isRenderProcessing('mini-corner')) { }
 
-    const { timings } = getMetadata('mini-corner');
+    const { timings } = await getMetadata('mini-corner');
     timings.start < new Date();
-    timings.virtualDatasetDuration.should.be.a.number();
-    timings.heightmapDuration.should.be.a.number();
-    timings.blenderDuration.should.be.a.number();
-    timings.geoTransformDuration.should.be.a.number();
+    timings.virtualDatasetDuration.should.be.a('number');
+    timings.heightmapDuration.should.be.a('number');
+    timings.blenderDuration.should.be.a('number');
+    timings.geoTransformDuration.should.be.a('number');
   });
   afterEach(async function () {
     if (existsSync(tmpFile)) await unlink(tmpFile);
