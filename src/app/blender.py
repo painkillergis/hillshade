@@ -11,8 +11,6 @@ for scene in bpy.data.scenes:
   scene.cycles.device = 'GPU'
   scene.cycles.samples = samples
   scene.cycles.feature_set = 'EXPERIMENTAL'
-  scene.cycles.use_adaptive_subdivision = True
-  scene.cycles.displacement_method = 'TRUE'
   scene.render.resolution_x = width
   scene.render.resolution_y = height
   scene.render.image_settings.file_format = 'TIFF'
@@ -32,14 +30,18 @@ bpy.data.lights['Light'].angle = math.radians(90)
 bpy.data.lights['Light'].energy = 5
 bpy.data.objects['Light'].rotation_euler = (
   math.radians(0),
-  math.radians(45),
+  math.radians(75),
   math.radians(135),
 )
 
 bpy.data.objects.remove(bpy.data.objects['Cube'], do_unlink=True)
 bpy.ops.mesh.primitive_plane_add()
 bpy.data.objects['Plane'].scale = (width / height, 1, 1)
+bpy.data.objects['Plane'].location = (0, 0, 1)
+bpy.data.objects['Plane'].cycles.use_adaptive_subdivision = True
+bpy.data.objects['Plane'].cycles.use_adaptive_subdivision = True
 material = bpy.data.materials.new(name = 'Material')
+material.cycles.displacement_method = 'DISPLACEMENT'
 material.use_nodes = True
 bpy.data.objects['Plane'].data.materials.append(material)
 outputNode = material.node_tree.nodes.get('Material Output')
@@ -60,3 +62,4 @@ bpy.data.objects['Plane'].modifiers.new('Subsurf', 'SUBSURF')
 bpy.data.objects['Plane'].modifiers['Subsurf'].subdivision_type = 'SIMPLE'
 
 # bpy.ops.render.render(write_still=True)
+# bpy.ops.wm.save_as_mainfile(filepath='/tmp/main.blend')
