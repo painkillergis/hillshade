@@ -30,7 +30,11 @@ bpy.data.cameras['Camera'].ortho_scale = max(width / height, 1) * 2
 bpy.data.lights['Light'].type = 'SUN'
 bpy.data.lights['Light'].angle = math.radians(90)
 bpy.data.lights['Light'].energy = 5
-bpy.data.objects['Light'].rotation_euler = (0, 45, 135)
+bpy.data.objects['Light'].rotation_euler = (
+  math.radians(0),
+  math.radians(45),
+  math.radians(135),
+)
 
 bpy.data.objects.remove(bpy.data.objects['Cube'], do_unlink=True)
 bpy.ops.mesh.primitive_plane_add()
