@@ -39,7 +39,6 @@ bpy.ops.mesh.primitive_plane_add()
 bpy.data.objects['Plane'].scale = (width / height, 1, 1)
 bpy.data.objects['Plane'].location = (0, 0, 1)
 bpy.data.objects['Plane'].cycles.use_adaptive_subdivision = True
-bpy.data.objects['Plane'].cycles.use_adaptive_subdivision = True
 material = bpy.data.materials.new(name = 'Material')
 material.cycles.displacement_method = 'DISPLACEMENT'
 material.use_nodes = True
