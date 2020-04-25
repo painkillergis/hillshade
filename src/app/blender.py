@@ -17,7 +17,7 @@ for scene in bpy.data.scenes:
   scene.render.resolution_y = int(height / slices)
   scene.render.image_settings.file_format = 'TIFF'
   scene.render.image_settings.color_mode = 'BW'
-  scene.render.image_settings.color_depth = '8'
+  scene.render.image_settings.color_depth = '16'
   scene.camera.location = (0.0, 1 - (1 + 2 * sliceIndex) / slices, 100.0)
   scene.camera.rotation_euler = (0.0, 0.0, 0.0)
 
