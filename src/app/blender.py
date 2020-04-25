@@ -1,10 +1,12 @@
 import bpy, math, sys
 
 args = sys.argv[sys.argv.index("--") + 1:]
-if len(args) != 5:
-  print('Usage: blender ... -- <heightmap> <width> <height> <scale> <samples>')
+if len(args) != 7:
+  print('Usage: blender ... -- <heightmap> <width> <height> <scale> <samples> <slices> <sliceIndex>')
   raise
-heightmap, width, height, scale, samples = args[0], int(args[1]), int(args[2]), float(args[3]), int(args[4])
+heightmap, width, height, scale, samples, slices, sliceIndex = args[0], int(args[1]), int(args[2]), float(args[3]), int(args[4]), int(args[5]), int(args[6])
+
+slicedHeight = height / slices
 
 for scene in bpy.data.scenes:
   scene.render.engine = 'CYCLES'
@@ -12,18 +14,18 @@ for scene in bpy.data.scenes:
   scene.cycles.samples = samples
   scene.cycles.feature_set = 'EXPERIMENTAL'
   scene.render.resolution_x = width
-  scene.render.resolution_y = height
+  scene.render.resolution_y = int(height / slices)
   scene.render.image_settings.file_format = 'TIFF'
   scene.render.image_settings.color_mode = 'BW'
   scene.render.image_settings.color_depth = '8'
-  scene.camera.location = (0.0, 0.0, 100.0)
+  scene.camera.location = (0.0, 1 - (1 + 2 * sliceIndex) / slices, 100.0)
   scene.camera.rotation_euler = (0.0, 0.0, 0.0)
 
 bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'CUDA'
 bpy.context.preferences.addons['cycles'].preferences.get_devices()
 
 bpy.data.cameras['Camera'].type = 'ORTHO'
-bpy.data.cameras['Camera'].ortho_scale = max(width / height, 1) * 2
+bpy.data.cameras['Camera'].ortho_scale = max(width / height, 1 / slices) * 2
 
 bpy.data.lights['Light'].type = 'SUN'
 bpy.data.lights['Light'].angle = math.radians(90)
