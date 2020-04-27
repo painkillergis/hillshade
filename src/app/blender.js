@@ -43,7 +43,7 @@ const renderShadedRelief = ({
       scale,
       samples,
       1,
-      1
+      0
     ]
   );
   const stderr = [];
