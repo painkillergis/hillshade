@@ -8,13 +8,11 @@ parser.add_argument('width', type = int)
 parser.add_argument('height', type = int)
 parser.add_argument('--scale', type = float, default = 1)
 parser.add_argument('--samples', type = int, default = 64)
-parser.add_argument('--slices', type = int, default = 1)
-parser.add_argument('--sliceIndex', type = int, default = 0)
+parser.add_argument('--chunks', type = int, default = 1)
+parser.add_argument('--chunk', type = int, nargs = 2, default = [0, 0])
 parser.add_argument('--mainfile')
 
 args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
-
-slicedHeight = int(args.height / args.slices)
 
 for scene in bpy.data.scenes:
   scene.render.engine = 'CYCLES'
@@ -22,18 +20,24 @@ for scene in bpy.data.scenes:
   scene.cycles.samples = args.samples
   scene.cycles.feature_set = 'EXPERIMENTAL'
   scene.render.resolution_x = args.width
-  scene.render.resolution_y = slicedHeight
+  scene.render.resolution_y = args.height
   scene.render.image_settings.file_format = 'TIFF'
   scene.render.image_settings.color_mode = 'BW'
   scene.render.image_settings.color_depth = '16'
-  scene.camera.location = (0.0, (args.slices - 1 - 2 * args.sliceIndex) / args.slices, 100.0)
+  scene.render.use_border = True
+  scene.render.use_crop_to_border = True
+  scene.render.border_min_x = (1 / args.chunks) * args.chunk[0]
+  scene.render.border_max_x = (1 / args.chunks) * (args.chunk[0] + 1)
+  scene.render.border_min_y = (1 / args.chunks) * args.chunk[1]
+  scene.render.border_max_y = (1 / args.chunks) * (args.chunk[1] + 1)
+  scene.camera.location = (0.0, 0.0, 100.0)
   scene.camera.rotation_euler = (0.0, 0.0, 0.0)
 
 bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'CUDA'
 bpy.context.preferences.addons['cycles'].preferences.get_devices()
 
 bpy.data.cameras['Camera'].type = 'ORTHO'
-bpy.data.cameras['Camera'].ortho_scale = max(args.width / args.height, 1 / args.slices) * 2
+bpy.data.cameras['Camera'].ortho_scale = max(args.width / args.height, 1) * 2
 
 bpy.data.lights['Light'].type = 'SUN'
 bpy.data.lights['Light'].angle = math.radians(90)
