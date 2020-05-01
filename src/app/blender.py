@@ -26,10 +26,12 @@ for scene in bpy.data.scenes:
   scene.render.image_settings.color_depth = '16'
   scene.render.use_border = True
   scene.render.use_crop_to_border = True
-  scene.render.border_min_x = (1 / args.chunks) * args.chunk[0]
-  scene.render.border_max_x = (1 / args.chunks) * (args.chunk[0] + 1)
-  scene.render.border_min_y = (1 / args.chunks) * args.chunk[1]
-  scene.render.border_max_y = (1 / args.chunks) * (args.chunk[1] + 1)
+  chunkWidth = 1 / args.chunks
+  chunkX, chunkY = args.chunk
+  scene.render.border_min_x = chunkWidth * chunkX
+  scene.render.border_max_x = chunkWidth * (chunkX + 1)
+  scene.render.border_min_y = 1 - chunkWidth * (chunkY + 1)
+  scene.render.border_max_y = 1 - chunkWidth * chunkY
   scene.camera.location = (0.0, 0.0, 100.0)
   scene.camera.rotation_euler = (0.0, 0.0, 0.0)
 
