@@ -1,2 +1,5 @@
+# blender.py
+read heightmap with skirts and render core
+
 # heightmapToChunks.py
-last x and y chunks include remainder pixels when width or height is not divisible by chunk width
+is implicit overlap factor of 1 good enough?

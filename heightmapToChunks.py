@@ -1,5 +1,5 @@
 from PIL import Image
-import argparse
+import argparse, math
 
 parser = argparse.ArgumentParser()
 parser.add_argument('heightmap')
@@ -11,8 +11,8 @@ args = parser.parse_args()
 def saveChunks(heightmap, destinationDirectory, chunkWidth, chunkHeight):
   heightmap = Image.open(heightmap)
   width, height = heightmap.size
-  for y in range(0, int(height / chunkHeight)):
-    for x in range(0, int(width / chunkWidth)):
+  for y in range(0, math.ceil(height / chunkHeight)):
+    for x in range(0, math.ceil(width / chunkWidth)):
       heightmap \
         .crop((
           (x - 1) * chunkWidth,
