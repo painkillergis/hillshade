@@ -8,15 +8,18 @@ parser.add_argument('chunkWidth', type=int)
 parser.add_argument('chunkHeight', type=int)
 args = parser.parse_args()
 
-heightmap = Image.open(args.heightmap)
-width, height = heightmap.size
-for y in range(0, int(height / args.chunkHeight)):
-  for x in range(0, int(width / args.chunkWidth)):
-    heightmap \
-      .crop((
-        (x - 1) * args.chunkWidth,
-        (y - 1) * args.chunkHeight,
-        (x + 2) * args.chunkWidth,
-        (y + 2) * args.chunkHeight,
-      )) \
-      .save(f'{args.destinationDirectory}/{y}-{x}.tif')
+def saveChunks(heightmap, destinationDirectory, chunkWidth, chunkHeight):
+  heightmap = Image.open(heightmap)
+  width, height = heightmap.size
+  for y in range(0, int(height / chunkHeight)):
+    for x in range(0, int(width / chunkWidth)):
+      heightmap \
+        .crop((
+          (x - 1) * chunkWidth,
+          (y - 1) * chunkHeight,
+          (x + 2) * chunkWidth,
+          (y + 2) * chunkHeight,
+        )) \
+        .save(f'{destinationDirectory}/{y}-{x}.tif')
+
+saveChunks(args.heightmap, args.destinationDirectory, args.chunkWidth, args.chunkHeight)
