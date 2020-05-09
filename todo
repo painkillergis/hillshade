@@ -1,2 +1,2 @@
 # heightmapToChunks.py
-takes a 64x64 heightmap.tif and breaks it into 16 48x48 chunks.d/$y-$x.tif each centered on non-overlapping 16x16 chunks
+parameterize chunk width
