@@ -1,2 +1,2 @@
 # heightmapToChunks.py
-parameterize chunk width
+last x and y chunks include remainder pixels when width or height is not divisible by chunk width
