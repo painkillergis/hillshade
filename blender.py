@@ -8,8 +8,6 @@ parser.add_argument('width', type = int)
 parser.add_argument('height', type = int)
 parser.add_argument('--scale', type = float, default = 1)
 parser.add_argument('--samples', type = int, default = 64)
-parser.add_argument('--chunks', type = int, default = 1)
-parser.add_argument('--chunk', type = int, nargs = 2, default = [0, 0])
 parser.add_argument('--mainfile')
 
 args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
@@ -26,12 +24,10 @@ for scene in bpy.data.scenes:
   scene.render.image_settings.color_depth = '16'
   scene.render.use_border = True
   scene.render.use_crop_to_border = True
-  chunkWidth = 1 / args.chunks
-  chunkX, chunkY = args.chunk
-  scene.render.border_min_x = chunkWidth * chunkX
-  scene.render.border_max_x = chunkWidth * (chunkX + 1)
-  scene.render.border_min_y = 1 - chunkWidth * (chunkY + 1)
-  scene.render.border_max_y = 1 - chunkWidth * chunkY
+  scene.render.border_min_x = 1 / 3
+  scene.render.border_max_x = 2 / 3
+  scene.render.border_min_y = 1 / 3
+  scene.render.border_max_y = 2 / 3
   scene.camera.location = (0.0, 0.0, 100.0)
   scene.camera.rotation_euler = (0.0, 0.0, 0.0)
 

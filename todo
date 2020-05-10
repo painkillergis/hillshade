@@ -1,5 +1,2 @@
-# blender.py
-read heightmap with skirts and render core
-
 # heightmapToChunks.py
 is implicit overlap factor of 1 good enough?
