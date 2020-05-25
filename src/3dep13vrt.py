@@ -1,4 +1,5 @@
 from pytest import raises
+from argparse import ArgumentParser
 from subprocess import run
 from osgeo.gdal import GDT_Byte, Rasterize, Unlink
 import numpy as np
@@ -93,3 +94,12 @@ def threeDepIdsToFilenames(ids, threeDepDirectory):
   available = listdir(threeDepDirectory)
   matches = [next(filename for filename in available if id in filename) for id in ids]
   return [f'{threeDepDirectory}/{filename}' for filename in matches]
+
+
+if __name__ == '__main__':
+  parser = ArgumentParser()
+  parser.add_argument('cutlineFile')
+  parser.add_argument('threeDepDirectory')
+  parser.add_argument('destinationFile')
+  args = parser.parse_args()
+  vrt(args.cutlineFile, args.threeDepDirectory, args.destinationFile)
