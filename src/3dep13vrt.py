@@ -1,11 +1,12 @@
-from pytest import raises
+#!/usr/bin/env python
 from argparse import ArgumentParser
-from subprocess import run
-from osgeo.gdal import GDT_Byte, Rasterize, Unlink
-import numpy as np
-from uuid import uuid4
-from pathlib import Path
 from os import listdir
+from osgeo.gdal import GDT_Byte, Rasterize, Unlink
+from pathlib import Path
+from pytest import raises
+from subprocess import run
+from uuid import uuid4
+import numpy as np
 
 
 def test_should_build_vrt_from_cutline(tmpdir):
