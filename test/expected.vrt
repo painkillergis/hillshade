@@ -4,6 +4,14 @@
   <VRTRasterBand dataType="Float32" band="1">
     <NoDataValue>-3.402823060737097e+38</NoDataValue>
     <ComplexSource>
+      <SourceFilename relativeToVRT="0">test/3dep13.d/n49w124-mini.img</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="10" RasterYSize="10" DataType="Float32" BlockXSize="64" BlockYSize="64" />
+      <SrcRect xOff="0" yOff="0" xSize="10" ySize="10" />
+      <DstRect xOff="0" yOff="0" xSize="10" ySize="10" />
+      <NODATA>-3.402823060737097e+38</NODATA>
+    </ComplexSource>
+    <ComplexSource>
       <SourceFilename relativeToVRT="0">test/3dep13.d/n48w123-mini.img</SourceFilename>
       <SourceBand>1</SourceBand>
       <SourceProperties RasterXSize="10" RasterYSize="10" DataType="Float32" BlockXSize="64" BlockYSize="64" />
@@ -17,14 +25,6 @@
       <SourceProperties RasterXSize="10" RasterYSize="10" DataType="Float32" BlockXSize="64" BlockYSize="64" />
       <SrcRect xOff="0" yOff="0" xSize="10" ySize="10" />
       <DstRect xOff="9.98890121411196" yOff="0" xSize="10" ySize="10" />
-      <NODATA>-3.402823060737097e+38</NODATA>
-    </ComplexSource>
-    <ComplexSource>
-      <SourceFilename relativeToVRT="0">test/3dep13.d/n49w124-mini.img</SourceFilename>
-      <SourceBand>1</SourceBand>
-      <SourceProperties RasterXSize="10" RasterYSize="10" DataType="Float32" BlockXSize="64" BlockYSize="64" />
-      <SrcRect xOff="0" yOff="0" xSize="10" ySize="10" />
-      <DstRect xOff="0" yOff="0" xSize="10" ySize="10" />
       <NODATA>-3.402823060737097e+38</NODATA>
     </ComplexSource>
   </VRTRasterBand>
