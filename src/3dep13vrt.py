@@ -18,7 +18,7 @@ def vrt(cutlineFile, threeDepDirectory, destinationFile):
     'gdalbuildvrt',
     destinationFile
   ] + [
-    f'{threeDepDirectory}/{img}-mini.img'
+    f'{threeDepDirectory}/USGS_NED_13_{img}_IMG.img'
     for img in intersecting3DepIdsFromCutline(cutlineFile)
   ])
 
