@@ -3,10 +3,14 @@ from argparse import ArgumentParser
 from os import listdir
 from osgeo.gdal import GDT_Byte, Rasterize, Unlink
 from pathlib import Path
-from pytest import raises
 from subprocess import run
 from uuid import uuid4
 import numpy as np
+import sys
+
+
+if 'pytest' in sys.modules:
+  from pytest import raises
 
 
 def test_should_build_vrt_from_cutline(tmpdir):
