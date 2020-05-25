@@ -4,3 +4,4 @@ node_modules/
 *.aux.xml
 chunks.d
 .idea
+*.pyc
