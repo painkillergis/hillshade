@@ -1,7 +1,10 @@
+from pytest import raises
 from subprocess import run
 from osgeo.gdal import GDT_Byte, Rasterize, Unlink
 import numpy as np
 from uuid import uuid4
+from pathlib import Path
+from os import listdir
 
 
 def test_should_build_vrt_from_cutline(tmpdir):
@@ -14,13 +17,8 @@ def test_should_build_vrt_from_cutline(tmpdir):
 
 
 def vrt(cutlineFile, threeDepDirectory, destinationFile):
-  run([
-    'gdalbuildvrt',
-    destinationFile
-  ] + [
-    f'{threeDepDirectory}/USGS_NED_13_{img}_IMG.img'
-    for img in intersecting3DepIdsFromCutline(cutlineFile)
-  ])
+  demPaths = threeDepIdsToFilenames(intersecting3DepIdsFromCutline(cutlineFile), threeDepDirectory)
+  run(['gdalbuildvrt', destinationFile] + demPaths)
 
 
 def test_intersecting_3dep_ids_from_cutline():
@@ -74,3 +72,24 @@ def test_upper_left_to_3dep_id():
 def upperLeftTo3DepId(lonLat):
   x, y = lonLat
   return f'{"s" if y < 0 else "n"}{abs(y):02}{"w" if x < 0 else "e"}{abs(x):03}'
+
+
+def test_three_dep_ids_to_filenames(tmpdir):
+  Path(f'{tmpdir}/n49w123_asiasd.img').touch()
+  Path(f'{tmpdir}/n49w128_asiasd.img').touch()
+  Path(f'{tmpdir}/buncha_whatever_s25e082_sd.img').touch()
+  assert threeDepIdsToFilenames(['n49w123', 's25e082'], tmpdir) == [
+    f'{tmpdir}/n49w123_asiasd.img',
+    f'{tmpdir}/buncha_whatever_s25e082_sd.img',
+  ]
+
+
+def test_three_dep_ids_raises_exception(tmpdir):
+  with raises(StopIteration):
+    threeDepIdsToFilenames(['not_gunna_find_this'], tmpdir)
+
+
+def threeDepIdsToFilenames(ids, threeDepDirectory):
+  available = listdir(threeDepDirectory)
+  matches = [next(filename for filename in available if id in filename) for id in ids]
+  return [f'{threeDepDirectory}/{filename}' for filename in matches]
