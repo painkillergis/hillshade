@@ -1,6 +1,7 @@
-import argparse, bpy, math, sys
+from argparse import ArgumentParser
+import bpy, math, sys
 
-parser = argparse.ArgumentParser(
+parser = ArgumentParser(
   usage = '%(prog)s -P blender.py -- [-h] [options]'
 )
 parser.add_argument('heightmap')
