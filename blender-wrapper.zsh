@@ -17,7 +17,7 @@ fi
 
 mkdir -p $heightmapChunksDir $hillshadeChunksDir
 
-python ~/ws/painkiller-blender/heightmapToChunks.py \
+python ~/ws/painkillergis/blender/heightmapToChunks.py \
   $sourcePath \
   $heightmapChunksDir \
   $tileWidth \
@@ -27,7 +27,7 @@ ls $heightmapChunksDir | \
   while read f ; do \
     id=`echo $f | cut -d '.' -f1`
     blender -b \
-      -P ~/ws/painkiller-blender/blender.py \
+      -P ~/ws/painkillergis/blender/blender.py \
       -noaudio \
       -o //$hillshadeChunksDir/#-$id.tif \
       -f 0 \
@@ -49,6 +49,6 @@ montage \
     -crop ${widthInches}x${heightInches} \
     $destinationPath
 
-python ~/ws/painkiller-blender/copyGeotransform.py \
+python ~/ws/painkillergis/blender/copyGeotransform.py \
   $sourcePath \
   $destinationPath
