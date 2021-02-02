@@ -25,6 +25,7 @@ python ~/ws/painkillergis/blender/heightmapToChunks.py \
 
 ls $heightmapChunksDir | \
   while read f ; do \
+    if [[ "`ls $hillshadeChunksDir`" == *$f* ]] ; then echo skipping $f ; continue ; fi
     id=`echo $f | cut -d '.' -f1`
     blender -b \
       -P ~/ws/painkillergis/blender/blender.py \
