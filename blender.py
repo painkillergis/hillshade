@@ -7,9 +7,12 @@ parser = ArgumentParser(
 parser.add_argument('heightmap')
 parser.add_argument('width', type = int)
 parser.add_argument('height', type = int)
+parser.add_argument('borderLeft', type =  float)
+parser.add_argument('borderTop', type =  float)
+parser.add_argument('borderRight', type =  float)
+parser.add_argument('borderBottom', type =  float)
 parser.add_argument('--scale', type = float, default = 1)
 parser.add_argument('--samples', type = int, default = 64)
-parser.add_argument('--chunks', type = bool)
 parser.add_argument('--mainfile')
 
 args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
@@ -24,13 +27,12 @@ for scene in bpy.data.scenes:
   scene.render.image_settings.file_format = 'TIFF'
   scene.render.image_settings.color_mode = 'BW'
   scene.render.image_settings.color_depth = '16'
-  if args.chunks:
-    scene.render.use_border = True
-    scene.render.use_crop_to_border = True
-    scene.render.border_min_x = 1 / 3
-    scene.render.border_max_x = 2 / 3
-    scene.render.border_min_y = 1 / 3
-    scene.render.border_max_y = 2 / 3
+  scene.render.use_border = True
+  scene.render.use_crop_to_border = True
+  scene.render.border_min_x = args.borderLeft
+  scene.render.border_max_x = args.borderRight
+  scene.render.border_min_y = args.borderTop
+  scene.render.border_max_y = args.borderBottom
   scene.camera.location = (0.0, 0.0, 100.0)
   scene.camera.rotation_euler = (0.0, 0.0, 0.0)
 

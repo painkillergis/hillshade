@@ -22,7 +22,7 @@ tileWidth = Image.open(f"{args.hillshade_tiles_dir}/{files[0]}").size[0]
 result = Image.new("I;16", (tileWidth * right, tileWidth * bottom))
 
 for tile in tiles:
-  (y, x, file) = tile
+  (x, y, file) = tile
   result.paste(Image.open(f"{args.hillshade_tiles_dir}/{file}"), box = (x * tileWidth, y * tileWidth))
 
 result.save(args.destination)

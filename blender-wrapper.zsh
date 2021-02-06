@@ -20,35 +20,16 @@ mkdir -p $heightmapTilesDir $hillshadeTilesDir
 python ~/ws/painkillergis/blender/heightmapToTiles.py \
   $sourcePath \
   $heightmapTilesDir \
+  $hillshadeTilesDir \
   $tileWidth \
-  $tileWidth
+  $tileWidth \
+  $tileWidth \
+  $scale \
+  $samples
 
-ls $heightmapTilesDir | \
-  while read f ; do \
-    if [[ "`ls $hillshadeTilesDir`" == *$f* ]] ; then echo skipping $f ; continue ; fi
-    id=`echo $f | cut -d '.' -f1`
-    blender -b \
-      -P ~/ws/painkillergis/blender/blender.py \
-      -noaudio \
-      -o //$hillshadeTilesDir/#-$id.tif \
-      -f 0 \
-      -- \
-      $heightmapTilesDir/$f \
-      $((tileWidth*3)) \
-      $((tileWidth*3)) \
-      --scale $scale \
-      --samples $samples \
-      --chunks=true
-  done
-
-montage \
-  -mode Concatenate \
-  -geometry ${tileWidth}x${tileWidth} \
-  $hillshadeTilesDir/* \
-  miff:- | \
-  magick - \
-    -crop ${width}x${height} \
-    $destinationPath
+python ~/ws/painkillergis/blender/stitch.py \
+  $hillshadeTilesDir \
+  $destinationPath
 
 python ~/ws/painkillergis/blender/copyGeotransform.py \
   $sourcePath \
