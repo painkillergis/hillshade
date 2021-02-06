@@ -7,33 +7,33 @@ samples=$5
 sourcePath=$6
 destinationPath=$7
 
-heightmapChunksDir=$8
-hillshadeChunksDir=$9
+heightmapTilesDir=$8
+hillshadeTilesDir=$9
 
 if [ "$#" -ne 9 ] ; then
- echo ./blender-wrapper.zsh tileWidth width height scale samples sourcePath desitinationPath heightmapChunksDir hillshadeChunksDir
+ echo ./blender-wrapper.zsh tileWidth width height scale samples sourcePath desitinationPath heightmapTilesDir hillshadeTilesDir
  exit 1
 fi
 
-mkdir -p $heightmapChunksDir $hillshadeChunksDir
+mkdir -p $heightmapTilesDir $hillshadeTilesDir
 
-python ~/ws/painkillergis/blender/heightmapToChunks.py \
+python ~/ws/painkillergis/blender/heightmapToTiles.py \
   $sourcePath \
-  $heightmapChunksDir \
+  $heightmapTilesDir \
   $tileWidth \
   $tileWidth
 
-ls $heightmapChunksDir | \
+ls $heightmapTilesDir | \
   while read f ; do \
-    if [[ "`ls $hillshadeChunksDir`" == *$f* ]] ; then echo skipping $f ; continue ; fi
+    if [[ "`ls $hillshadeTilesDir`" == *$f* ]] ; then echo skipping $f ; continue ; fi
     id=`echo $f | cut -d '.' -f1`
     blender -b \
       -P ~/ws/painkillergis/blender/blender.py \
       -noaudio \
-      -o //$hillshadeChunksDir/#-$id.tif \
+      -o //$hillshadeTilesDir/#-$id.tif \
       -f 0 \
       -- \
-      $heightmapChunksDir/$f \
+      $heightmapTilesDir/$f \
       $((tileWidth*3)) \
       $((tileWidth*3)) \
       --scale $scale \
@@ -44,7 +44,7 @@ ls $heightmapChunksDir | \
 montage \
   -mode Concatenate \
   -geometry ${tileWidth}x${tileWidth} \
-  $hillshadeChunksDir/* \
+  $hillshadeTilesDir/* \
   miff:- | \
   magick - \
     -crop ${width}x${height} \
