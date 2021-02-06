@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from PIL import Image
-import argparse, json, os, requests, subprocess, sys
+from osgeo import gdal, gdalconst
+import argparse, json, os, re, requests, subprocess, sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument('heightmap')
@@ -79,22 +80,21 @@ for tileMetadata in tileMetadatas:
     stderr = sys.stderr,
   )
 
-subprocess.run(
-  [
-    "sh",
-    "-c",
-    f"python ~/ws/painkillergis/blender/stitch.py {args.hillshadeTilesDir} {args.hillshade}",
-  ],
-  stdout = sys.stdout,
-  stderr = sys.stderr,
-)
+hillshade = Image.new("I;16", heightmap.size)
+for tileMetadata in tileMetadatas:
+  xIndex = tileMetadata['indices']['x']
+  yIndex = tileMetadata['indices']['y']
+  hillshadeTilePath = f"{args.hillshadeTilesDir}/0-{xIndex}-{yIndex}.tif"
 
-subprocess.run(
-  [
-    "sh",
-    "-c",
-    f"python ~/ws/painkillergis/blender/copyGeotransform.py {args.heightmap} {args.hillshade}",
-  ],
-  stdout = sys.stdout,
-  stderr = sys.stderr,
-)
+  hillshade.paste(
+    Image.open(hillshadeTilePath),
+    box = (xIndex * args.tileWidth, yIndex * args.tileWidth),
+  )
+
+hillshade.save(args.hillshade)
+
+heightmapDataSource = gdal.Open(args.heightmap)
+hillshadeDataSource = gdal.Open(args.hillshade, gdalconst.GA_Update)
+
+hillshadeDataSource.SetGeoTransform(heightmapDataSource.GetGeoTransform())
+hillshadeDataSource.SetProjection(heightmapDataSource.GetProjection())
