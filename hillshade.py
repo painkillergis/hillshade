@@ -31,6 +31,9 @@ tileMetadatas = requests.post(
 ) \
   .json()
 
+os.makedirs(args.heightmapTilesDir, exist_ok = True)
+os.makedirs(args.hillshadeTilesDir, exist_ok = True)
+
 for tileMetadata in tileMetadatas:
   xIndex = tileMetadata['indices']['x']
   yIndex = tileMetadata['indices']['y']

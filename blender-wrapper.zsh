@@ -15,8 +15,6 @@ if [ "$#" -ne 9 ] ; then
  exit 1
 fi
 
-mkdir -p $heightmapTilesDir $hillshadeTilesDir
-
 python ~/ws/painkillergis/blender/hillshade.py \
   $sourcePath \
   $heightmapTilesDir \
