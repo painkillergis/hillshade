@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from PIL import Image
 import argparse, json, os, requests, subprocess, sys
 
