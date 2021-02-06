@@ -15,8 +15,8 @@ def fileToTile(file):
 files = os.listdir(args.hillshade_tiles_dir)
 tiles = list(map(fileToTile, files))
 
-right = max(map(lambda tile: tile[0], tiles))
-bottom = max(map(lambda tile: tile[1], tiles))
+right = max(map(lambda tile: tile[0], tiles)) + 1
+bottom = max(map(lambda tile: tile[1], tiles)) + 1
 
 tileWidth = Image.open(f"{args.hillshade_tiles_dir}/{files[0]}").size[0]
 result = Image.new("I;16", (tileWidth * right, tileWidth * bottom))
