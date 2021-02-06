@@ -1,6 +1,6 @@
 tileWidth=$1
-widthInches=$2
-heightInches=$3
+width=$2
+height=$3
 scale=$4
 samples=$5
 
@@ -11,7 +11,7 @@ heightmapChunksDir=$8
 hillshadeChunksDir=$9
 
 if [ "$#" -ne 9 ] ; then
- echo ./blender-wrapper.zsh tileWidth widthInches heightInches scale samples sourcePath desitinationPath heightmapChunksDir hillshadeChunksDir
+ echo ./blender-wrapper.zsh tileWidth width height scale samples sourcePath desitinationPath heightmapChunksDir hillshadeChunksDir
  exit 1
 fi
 
@@ -47,7 +47,7 @@ montage \
   $hillshadeChunksDir/* \
   miff:- | \
   magick - \
-    -crop ${widthInches}x${heightInches} \
+    -crop ${width}x${height} \
     $destinationPath
 
 python ~/ws/painkillergis/blender/copyGeotransform.py \
