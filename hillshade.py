@@ -87,3 +87,13 @@ subprocess.run(
   stdout = sys.stdout,
   stderr = sys.stderr,
 )
+
+subprocess.run(
+  [
+    "sh",
+    "-c",
+    f"python ~/ws/painkillergis/blender/copyGeotransform.py {args.heightmap} {args.hillshade}",
+  ],
+  stdout = sys.stdout,
+  stderr = sys.stderr,
+)

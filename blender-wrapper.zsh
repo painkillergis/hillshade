@@ -25,7 +25,3 @@ python ~/ws/painkillergis/blender/hillshade.py \
   $tileWidth \
   $scale \
   $samples
-
-python ~/ws/painkillergis/blender/copyGeotransform.py \
-  $sourcePath \
-  $destinationPath
