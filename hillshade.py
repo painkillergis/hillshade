@@ -5,6 +5,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('heightmap')
 parser.add_argument('heightmapTilesDir')
 parser.add_argument('hillshadeTilesDir')
+parser.add_argument('hillshade')
 parser.add_argument('tileWidth', type = int)
 parser.add_argument('tileHeight', type = int)
 parser.add_argument('overlap', type = int)
@@ -73,3 +74,13 @@ for tileMetadata in tileMetadatas:
     stdout = sys.stdout,
     stderr = sys.stderr,
   )
+
+subprocess.run(
+  [
+    "sh",
+    "-c",
+    f"python ~/ws/painkillergis/blender/stitch.py {args.hillshadeTilesDir} {args.hillshade}",
+  ],
+  stdout = sys.stdout,
+  stderr = sys.stderr,
+)

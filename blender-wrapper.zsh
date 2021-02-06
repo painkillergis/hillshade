@@ -21,15 +21,12 @@ python ~/ws/painkillergis/blender/hillshade.py \
   $sourcePath \
   $heightmapTilesDir \
   $hillshadeTilesDir \
+  $destinationPath \
   $tileWidth \
   $tileWidth \
   $tileWidth \
   $scale \
   $samples
-
-python ~/ws/painkillergis/blender/stitch.py \
-  $hillshadeTilesDir \
-  $destinationPath
 
 python ~/ws/painkillergis/blender/copyGeotransform.py \
   $sourcePath \
