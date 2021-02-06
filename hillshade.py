@@ -73,4 +73,3 @@ for tileMetadata in tileMetadatas:
     stdout = sys.stdout,
     stderr = sys.stderr,
   )
-

@@ -17,7 +17,7 @@ fi
 
 mkdir -p $heightmapTilesDir $hillshadeTilesDir
 
-python ~/ws/painkillergis/blender/heightmapToTiles.py \
+python ~/ws/painkillergis/blender/hillshade.py \
   $sourcePath \
   $heightmapTilesDir \
   $hillshadeTilesDir \
