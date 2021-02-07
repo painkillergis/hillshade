@@ -36,7 +36,8 @@ tileMetadatas = requests.post(
 os.makedirs(args.heightmapTilesDir, exist_ok = True)
 os.makedirs(args.hillshadeTilesDir, exist_ok = True)
 
-for tileMetadata in tileMetadatas:
+for index, tileMetadata in enumerate(tileMetadatas):
+  print(f'rendering hillshade {index}/{len(tileMetadatas)}')
   xIndex = tileMetadata['indices']['x']
   yIndex = tileMetadata['indices']['y']
 
